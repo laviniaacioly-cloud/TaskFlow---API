@@ -22,3 +22,12 @@ console.log ('O servidor ficara em: ', caminhoServidor);
 const arquivosJS = arquivos.filter(arquivo => arquivo.endsWith('.js'));
 console.log('');
 console.log(`Arquivos. js encontrados: ${arquivosJS.length}`);
+
+const arquivosTaskFlow = fs.readdirSync('../taskflow/');
+arquivosTaskFlow.forEach(arquivo => {
+    console.log(' -', arquivo)
+});
+
+const arquivosJS1 = arquivosTaskFlow.filter(arquivo => arquivo.endWish('.js'));
+console.log('');
+console.log(`Arquivos. js encontrados: ${arquivosJS.length}`);
