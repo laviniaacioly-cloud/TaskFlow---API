@@ -1,0 +1,11 @@
+# Dependências — geradas pelo npm install
+# NUNCA enviar para o GitHub — pode ter centenas de MB
+node_modules/
+
+# Variáveis de ambiente — podem conter senhas e chaves
+.env
+.env.local
+
+# Logs do Node
+*.log
+npm-debug.log*
