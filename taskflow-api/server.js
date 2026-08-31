@@ -137,7 +137,6 @@ app.delete("/usuario/:id", (req, res) => {
 //=====================================================
 // 6. ROTAS DAS TAREFAS
 //=====================================================
-
 // GET /tarefas            → retorna todas
 // GET /tarefas?coluna=afazer  → só as da coluna afazer
 // GET /tarefas?prioridade=alta → só as de alta prioridade
@@ -252,32 +251,22 @@ app.get("/estatisticas", (req, res) => {
   const total = resultado.length;
   //TOTAL POR COLUNA
   const porColuna = {
-    afazer: resultado.filter((tarefa) => tarefa.coluna === "afazer")
-      .length,
-
-    andamento: resultado.filter((tarefa) => tarefa.coluna === "andamento")
-      .length,
-
-    concluido: resultado.filter((tarefa) => tarefa.coluna === "concluido")
-      .length,
+    afazer: resultado.filter((tarefa) => tarefa.coluna === "afazer").length,
+    andamento: resultado.filter((tarefa) => tarefa.coluna === "andamento").length,
+    concluido: resultado.filter((tarefa) => tarefa.coluna === "concluido").length,
   };
 
   const porPrioridade = {
     alta: resultado.filter((tarefa) => tarefa.prioridade === "alta").length,
-
-    media: resultado.filter((tarefa) => tarefa.prioridade === "media" 
-    || tarefa.prioridade === "média" ).length,
-
+    media: resultado.filter((tarefa) => tarefa.prioridade === "media" || tarefa.prioridade === "média" ).length,
     baixa: resultado.filter((tarefa) => tarefa.prioridade === "baixa").length,
   };
 
   //COLUNA COM MAIS TAREFAS
-  const colunaMaisTarefas = Object.entries(porColuna).sort(
-    (a, b) => b[1] - a[1])[0][0];
+  const colunaMaisTarefas = Object.entries(porColuna).sort((a, b) => b[1] - a[1])[0][0];
 
   //PRIORIDADE MAIS COMUM
-  const prioridadeMaisComum = Object.entries(porPrioridade).sort(
-    (a, b) => b[1] - a[1])[0][0];
+  const prioridadeMaisComum = Object.entries(porPrioridade).sort((a, b) => b[1] - a[1])[0][0];
 
   res.json({
     total,
@@ -293,21 +282,13 @@ app.get("/estatisticas/resumo", (req, res) => {
 
   //Contar tarefas por coluna
   const afazer = tarefas.filter((tarefa) => tarefa.coluna === "afazer").length;
-
-  const andamento = tarefas.filter(
-    (tarefa) => tarefa.coluna === "andamento",
-  ).length;
-
-  const concluido = tarefas.filter(
-    (tarefa) => tarefa.coluna === "concluido",
-  ).length;
+  const andamento = tarefas.filter((tarefa) => tarefa.coluna === "andamento",).length;
+  const concluido = tarefas.filter((tarefa) => tarefa.coluna === "concluido",).length;
 
   //Contar tarefas por prioridade
   const prioridades = {
     alta: tarefas.filter((tarefa) => tarefa.prioridade === "alta").length,
-
     media: tarefas.filter((tarefa) => tarefa.prioridade === "media").length,
-
     baixa: tarefas.filter((tarefa) => tarefa.prioridade === "baixa").length,
   };
 
