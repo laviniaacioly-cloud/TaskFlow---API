@@ -20,6 +20,15 @@ app.use("/usuarios", usuariosRoutes);
 // ROUTER.GET VIRA GET /TAREFAS - TAREFAS ROUTES
 app.use("/tarefas", tarefasRoutes);
 
+//  Rota 404 — DEVE SER A ÚLTIMA SEMPRE
+app.use((req, res) => {
+  res.status(404).json({
+    erro: "Rota não encontrada",
+    metodo: req.method,
+    caminho: req.url,
+  });
+});
+
 // INICIAR O SERVIDOR
 app.listen(PORTA, () => {
   console.log(`Servidor rodando em http://localhost:${PORTA}`);
