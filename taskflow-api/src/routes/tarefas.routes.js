@@ -7,12 +7,12 @@ const tarefasController = require('../controllers/tarefas.controller');
 // GETs - LISTAR TAREFAS
 router.get('/', tarefasController.listar);
 
-// CRIAR TAREFA - POST
-router.post('/', tarefasController.criar);
-
 //  ROTAS DE ESATATISTICAS
 router.get("/estatisticas", tarefasController.estatisticas);
-router.get("/estatisticas/resumo", tarefasController.estatisticasResumo);
+router.get("/estatisticas/resumo", tarefasController.resumo);
+
+// CRIAR TAREFA - POST
+router.post('/', tarefasController.criar);
 
 // EDITAR TAREFAS - PUT
 router.put('/:id', tarefasController.atualizar);
