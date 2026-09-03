@@ -1,7 +1,22 @@
 let projetos = [
-  { id: 1, nome: "Projeto Y", descricao: "descrição do projeto Y", ativo: "true" },
-  { id: 2, nome: "Projeto X", descricao: "descrição do projeto X", ativo: "true"  },
-  { id: 3, nome: "Projeto Z", descricao: "descrição do projeto Z", ativo: "true" },
+  {
+    id: 1,
+    nome: "Projeto Y",
+    descricao: "descrição do projeto Y",
+    ativo: "true",
+  },
+  {
+    id: 2,
+    nome: "Projeto X",
+    descricao: "descrição do projeto X",
+    ativo: "true",
+  },
+  {
+    id: 3,
+    nome: "Projeto Z",
+    descricao: "descrição do projeto Z",
+    ativo: "true",
+  },
 ];
 
 let proximoProjeto = 4;
@@ -24,16 +39,26 @@ const projetosController = {
   // POST - CRIAR NOVOS PROJETOS
   criarProjetos(req, res) {
     const { nome, descricao, ativo } = req.body;
-    const novoProjeto = {
-      id: proximoProjeto,
-      nome,
-      descricao,
-      ativo: true
-    };
-    projetos.push(novoProjeto);
-    proximoProjeto++;
+    const nomeObrigatorio = projetos.find((p) => p.nome === nome);
 
-    res.status(201).json(novoProjeto);
+    if (!nome || nome.trim() === "") {
+        return res.status(400).json({
+            erro: "Obrigatório informar o nome do projeto!"
+        });
+    }
+
+      const novoProjeto = {
+        id: proximoProjeto,
+        nome: nome.trim(),
+        descricao: descricao || "",
+        ativo: ativo ?? true,
+      };
+
+      projetos.push(novoProjeto);
+      proximoProjeto++;
+
+      res.status(201).json(novoProjeto);
+
   },
   // PUT - EDITAR PROJETOS
   atualizarProjetos(req, res) {
@@ -45,10 +70,10 @@ const projetosController = {
         mensagem: "Projeto não encontrado",
       });
     }
-    const { nome, descricao, ativo} = req.body;
+    const { nome, descricao, ativo } = req.body;
     projeto.nome = nome ?? projeto.nome;
     projeto.descricao = descricao ?? projeto.descricao;
-    projeto.ativo = ativo ?? projeto.ativo
+    projeto.ativo = ativo ?? projeto.ativo;
 
     res.json(projeto);
   },
