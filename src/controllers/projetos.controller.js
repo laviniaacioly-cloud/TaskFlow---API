@@ -1,7 +1,7 @@
 let projetos = [
-  { id: 1, nome: "Projeto Y", descricao: "descrição do projeto Y" },
-  { id: 2, nome: "Projeto X", descricao: "descrição do projeto X" },
-  { id: 3, nome: "Projeto Z", descricao: "descrição do projeto Z" },
+  { id: 1, nome: "Projeto Y", descricao: "descrição do projeto Y", ativo: "true" },
+  { id: 2, nome: "Projeto X", descricao: "descrição do projeto X", ativo: "true"  },
+  { id: 3, nome: "Projeto Z", descricao: "descrição do projeto Z", ativo: "true" },
 ];
 
 let proximoProjeto = 4;
@@ -23,11 +23,12 @@ const projetosController = {
   },
   // POST - CRIAR NOVOS PROJETOS
   criarProjetos(req, res) {
-    const { nome, descricao } = req.body;
+    const { nome, descricao, ativo } = req.body;
     const novoProjeto = {
       id: proximoProjeto,
       nome,
       descricao,
+      ativo: true
     };
     projetos.push(novoProjeto);
     proximoProjeto++;
@@ -44,9 +45,10 @@ const projetosController = {
         mensagem: "Projeto não encontrado",
       });
     }
-    const { nome, descricao } = req.body;
+    const { nome, descricao, ativo} = req.body;
     projeto.nome = nome ?? projeto.nome;
     projeto.descricao = descricao ?? projeto.descricao;
+    projeto.ativo = ativo ?? projeto.ativo
 
     res.json(projeto);
   },
