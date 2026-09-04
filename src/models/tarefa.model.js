@@ -1,4 +1,3 @@
-
 let tarefas = [
   { id: 1, texto: "Estudar Node", prioridade: "alta", coluna: "afazer" },
   { id: 2, texto: "Bater meta", prioridade: "baixa", coluna: "andamento" },

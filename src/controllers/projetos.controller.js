@@ -1,35 +1,15 @@
-let projetos = [
-  {
-    id: 1,
-    nome: "Projeto Y",
-    descricao: "descrição do projeto Y",
-    ativo: "true",
-  },
-  {
-    id: 2,
-    nome: "Projeto X",
-    descricao: "descrição do projeto X",
-    ativo: "true",
-  },
-  {
-    id: 3,
-    nome: "Projeto Z",
-    descricao: "descrição do projeto Z",
-    ativo: "true",
-  },
-];
-
-let proximoProjeto = 4;
+const projetoModel = require("../models/projeto.model");
 
 const projetosController = {
   // GET - MOSTRAR PROJETOS
   listarProjetos(req, res) {
+    const projetos = projetoModel.listarProjetos();
     res.json(projetos);
   },
   // GET - BUSCAR POR ID
   buscarProjetosId(req, res) {
     const id = Number(req.params.id);
-    const projeto = projetos.find((p) => p.id === id);
+    const projeto = projetoModel.buscarProjeto(id);
     if (!projeto) {
       return res.status(404).json({ erro: "Projeto não encontrada" });
     }
@@ -39,58 +19,48 @@ const projetosController = {
   // POST - CRIAR NOVOS PROJETOS
   criarProjetos(req, res) {
     const { nome, descricao, ativo } = req.body;
-    const nomeObrigatorio = projetos.find((p) => p.nome === nome);
 
     if (!nome || nome.trim() === "") {
-        return res.status(400).json({
-            erro: "Obrigatório informar o nome do projeto!"
-        });
+      return res.status(400).json({
+        erro: "Obrigatório informar o nome do projeto!",
+      });
     }
 
-      const novoProjeto = {
-        id: proximoProjeto,
-        nome: nome.trim(),
-        descricao: descricao || "",
-        ativo: ativo ?? true,
-      };
-
-      projetos.push(novoProjeto);
-      proximoProjeto++;
-
-      res.status(201).json(novoProjeto);
-
+    const novoProjeto = projetoModel.adicionarProjeto({
+      id: proximoProjeto,
+      nome: nome.trim(),
+      descricao: descricao || "",
+      ativo: ativo ?? true,
+    });
+    res.status(201).json(novoProjeto);
   },
+
   // PUT - EDITAR PROJETOS
   atualizarProjetos(req, res) {
     const id = Number(req.params.id);
-    const projeto = projetos.find((p) => p.id === id);
+    const projeto = projetoModel.atualizarProjeto(id);
 
     if (!projeto) {
       return res.status(404).json({
         mensagem: "Projeto não encontrado",
       });
     }
-    const { nome, descricao, ativo } = req.body;
-    projeto.nome = nome ?? projeto.nome;
-    projeto.descricao = descricao ?? projeto.descricao;
-    projeto.ativo = ativo ?? projeto.ativo;
-
-    res.json(projeto);
+    const atualizado = projetoModel.atualizarProjeto(id, req.body);
+    res.json(atualizado);
   },
   // DELETE - APAGAR PROJETOS
   removerProjetos(req, res) {
     const id = Number(req.params.id);
-    const indice = projetos.findIndex((p) => p.id === id);
+    const removido = projetoModel.removerProjeto(id);
 
-    if (indice === -1) {
+    if (!removido) {
       return res.status(404).json({
         mensagem: "Projeto não encontrado",
       });
     }
-    const projetoRemovido = projetos.splice(indice, 1);
     res.json({
-      mensagem: "Projeto removido com sucesso",
-      projeto: projetoRemovido[0],
+      mensagem:"Projeto removido com sucesso",
+      projeto: removido,
     });
   },
 };
