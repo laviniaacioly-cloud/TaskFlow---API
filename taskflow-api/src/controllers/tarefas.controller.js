@@ -7,7 +7,7 @@ const tarefasController = {
     const resultado = coluna
       ? tarefaModel.listarPorColuna(coluna)
       : tarefaModel.listar();
-    res, json(resultado);
+    res.json(resultado);
   },
 
   // ESTATISTICAS
@@ -53,7 +53,7 @@ const tarefasController = {
   // DELETE - DELETAR TAREFA
   remover(req, res) {
     const removida = tarefaModel.remover(parseInt(req.params.id));
-    if (!removida) return res.json(404).json({ erro: "Tarefa nao encontrada" });
+    if (!removida) return res.status(404).json({ erro: "Tarefa nao encontrada" });
     res.json({ mensagem: "Tarefa removida com sucesso", tarefa: removida });
   },
 };

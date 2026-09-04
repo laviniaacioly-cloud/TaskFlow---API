@@ -1,4 +1,3 @@
-const { estatisticas } = require("../controllers/tarefas.controller");
 
 let tarefas = [
   { id: 1, texto: "Estudar Node", prioridade: "alta", coluna: "afazer" },
@@ -42,16 +41,16 @@ module.exports = {
   estatisticas: () => {
     const total = tarefas.length;
     const porColuna = {
-      afazer: base.filter((t) => t.coluna === "afazer").length,
-      andamento: base.filter((t) => t.coluna === "andamento").length,
-      concluido: base.filter((t) => t.coluna === "concluido").length,
+      afazer: tarefas.filter((t) => t.coluna === "afazer").length,
+      andamento: tarefas.filter((t) => t.coluna === "andamento").length,
+      concluido: tarefas.filter((t) => t.coluna === "concluido").length,
     };
     const porPrioridade = {
       alta: tarefas.filter((tarefa) => tarefa.prioridade === "alta").length,
       media: tarefas.filter((tarefa) => tarefa.prioridade === "media").length,
       baixa: tarefas.filter((tarefa) => tarefa.prioridade === "baixa").length,
     };
-    const comMaisTarefas = Object.entries(porColuna).sort((a, b) => b[1])[0][0];
+    const comMaisTarefas = Object.entries(porColuna).sort((a, b) => b[1] - a[1])
     return {
       total,
       porColuna,
@@ -66,13 +65,13 @@ module.exports = {
     const andamento = tarefas.filter((t) => t.coluna === "andamento").length;
     const concluido = tarefas.filter((t) => t.coluna === "concluido").length;
     const prioridades = {
-      alta: tarefas.filter((tarefa) => tarefa.prioridade === "alta").length,
-      media: tarefas.filter((tarefa) => tarefa.prioridade === "media").length,
-      baixa: tarefas.filter((tarefa) => tarefa.prioridade === "baixa").length,
+      alta: tarefas.filter((tarefa) => tarefa.prioridades === "alta").length,
+      media: tarefas.filter((tarefa) => tarefa.prioridades === "media").length,
+      baixa: tarefas.filter((tarefa) => tarefa.prioridades === "baixa").length,
     };
-    const prioridadeMaisComum = Object.entries(prioridade).sort(
+    const prioridadeMaisComum = Object.entries(prioridades).sort(
       (a, b) => b[1] - a[1],
     )[0][0];
-    return `Você tem ${total} tarefa(s): ${concluido} concluida(s), ${andamento} em andamento  e ${afazer} a fazer. A prioridade mais commum: ${prioridadeMaisComum}`;
+    return `Você tem ${total} tarefa(s): ${concluido} concluida(s), ${andamento} em andamento  e ${afazer} a fazer. A prioridade mais comum: ${prioridadeMaisComum}`;
   },
-};
+}
