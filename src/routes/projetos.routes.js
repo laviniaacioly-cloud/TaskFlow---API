@@ -4,6 +4,8 @@ const projetosController = require ("../controllers/projetos.controller")
 
 router.get("/", projetosController.listarProjetos);
 
+router.get("/:id/resumo", projetosController.resumoProjeto);
+
 router.get("/:id", projetosController.buscarProjetosId);
 
 router.post("/", projetosController.criarProjetos);
