@@ -27,7 +27,6 @@ const projetosController = {
     }
 
     const novoProjeto = projetoModel.adicionarProjeto({
-      id: proximoProjeto,
       nome: nome.trim(),
       descricao: descricao || "",
       ativo: ativo ?? true,
