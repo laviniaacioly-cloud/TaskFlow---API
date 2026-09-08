@@ -1,14 +1,20 @@
 
 // CONFIGURAÇÃO DO EXPRESS
 const express = require("express");  
+
 const tarefasRoutes = require("./src/routes/tarefas.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
+const validarContentType = require('./src/middlewares/validarContentType');
+const logger = require('./src/middlewares/logger');
+
 const app = express();
 const PORTA = 3000;
 
 // Permite que o Express receba dados em JSON
 app.use(express.json());
+app.use(validarContentType);
+app.use(logger);
 
 //  ROTA INICIAL DA API
 app.get("/", (req, res) => {
