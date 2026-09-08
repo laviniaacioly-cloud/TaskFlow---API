@@ -1,6 +1,6 @@
 
 // CONFIGURAÇÃO DO EXPRESS
-const express = require("express");
+const express = require("express");  
 const tarefasRoutes = require("./src/routes/tarefas.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
@@ -9,8 +9,6 @@ const PORTA = 3000;
 
 // Permite que o Express receba dados em JSON
 app.use(express.json());
-
-
 
 //  ROTA INICIAL DA API
 app.get("/", (req, res) => {
