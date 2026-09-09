@@ -1,20 +1,37 @@
-
 // CONFIGURAÇÃO DO EXPRESS
 const express = require("express");  
 
 const tarefasRoutes = require("./src/routes/tarefas.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
+
 const validarContentType = require('./src/middlewares/validarContentType');
 const logger = require('./src/middlewares/logger');
+const temporizador = require('./src/middlewares/temporizador');
+
+require('dotenv').config();
 
 const app = express();
-const PORTA = 3000;
+const cors = require('cors');
+const PORTA = process.env.PORTA || 3000;
+
+// CORS - CONFIGURAÇÃO
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://www.google.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}));
+
+app.listen(PORTA, () =>{
+  console.log('Servidor na porta' + PORTA);
+});
 
 // Permite que o Express receba dados em JSON
 app.use(express.json());
 app.use(validarContentType);
 app.use(logger);
+app.use(temporizador);
 
 //  ROTA INICIAL DA API
 app.get("/", (req, res) => {
