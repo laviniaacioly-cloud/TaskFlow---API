@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const tarefasController = require('../controllers/tarefas.controller');
 
-// app.use(express.json());
+const validar = require('../middlewares/validar');
+const schemas = require('../middlewares/schemas');
 
 // GETs - LISTAR TAREFAS
 router.get('/', tarefasController.listar);
@@ -12,10 +13,10 @@ router.get("/estatisticas", tarefasController.estatisticas);
 router.get("/estatisticas/resumo", tarefasController.resumo);
 
 // CRIAR TAREFA - POST
-router.post('/', tarefasController.criar);
+router.post('/', validar(schemas.tarefa), tarefasController.criar);
 
 // EDITAR TAREFAS - PUT
-router.put('/:id', tarefasController.atualizar);
+router.put('/:id', validar(schemas.tarefa), tarefasController.atualizar);
 
 // DELETAR TAREFAS - DELETE
 router.delete('/:id', tarefasController.remover);
