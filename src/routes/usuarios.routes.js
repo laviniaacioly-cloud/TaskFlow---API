@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const usuariosController = require("../controllers/usuarios.controller");
 
+const validar = require('../middlewares/validar');
+const schemas = require('../middlewares/schemas');
+
 // LISTAR USUÁRIOS - GET
 router.get("/", usuariosController.listar);
 
@@ -9,10 +12,10 @@ router.get("/", usuariosController.listar);
 router.get("/:id", usuariosController.buscarPorId);
 
 // CRIAR USUÁRIO + VALIDAR EMAIL - POST
-router.post("/", usuariosController.criar);
+router.post("/", validar(schemas.usuario), usuariosController.criar);
 
 // EDITAR USUÁRIO + EMAIL ÚNICO - PUT
-router.put("/:id", usuariosController.atualizar);
+router.put("/:id", validar(schemas.usuario), usuariosController.atualizar);
 
 // DELETAR USUÁRIOS - DELETE
 router.delete("/:id", usuariosController.remover);
