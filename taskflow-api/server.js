@@ -13,6 +13,9 @@ const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
 const authRoutes = require('./src/routes/auth.routes');
 
+// IMPORTAR MIDDLEWARE DE AUTENTICAÇÃO
+const autenticar = require('./src/middlewares/autenticar');
+
 // IMPORTAR MIDDLEWARES
 const validarContentType = require('./src/middlewares/validarContentType');
 const logger = require('./src/middlewares/logger');
@@ -43,12 +46,12 @@ app.get("/", (req, res) => {
 });
 
 // IMPORTAR - USUÁRIOS ROUTER
-app.use("/usuarios", usuariosRoutes);
+app.use("/usuarios", autenticar, usuariosRoutes);
 
 // ROUTER.GET VIRA GET /TAREFAS - TAREFAS ROUTES
-app.use("/tarefas", tarefasRoutes);
+app.use("/tarefas", autenticar, tarefasRoutes);
 
-app.use("/projetos", projetosRoutes);
+app.use("/projetos", autenticar, projetosRoutes);
 
 //  Rota 404 — DEVE SER A ÚLTIMA SEMPRE
 app.use((req, res) => {
