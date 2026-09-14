@@ -3,7 +3,7 @@ let usuarios = [
   { id: 1, nome: "admin", email: "admin@taskflow.com", senha: "123457" },
   { id: 2, nome: "lavi", email: "lavi@taskflow.com", senha: "567891" },
   { id: 3, nome: "tony", email: "tony@taskflow.com", senha: "135789" },
-  { id: 4, nome:  'Alice', email: 'alice@email.com', senha: '123456'
+  { id: 4, nome:  'Alice', email: 'alice@taskflow.com', senha: '123456'
  }
 ];
 

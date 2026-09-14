@@ -70,7 +70,8 @@ const tarefasController = {
 
   // POST - CRIAR TAREFA
   criar(req, res) {
-    const { texto, prioridade, coluna, usuarioId, projetoId } = req.body;
+    const { texto, prioridade, coluna, projetoId } = req.body;
+    const usuarioId = req.usuario.id;
 
     // Validação do texto
     if (!texto) {
@@ -79,16 +80,16 @@ const tarefasController = {
       });
     }
 
-    // BASE A - validar usuário
-    if (usuarioId !== undefined) {
-      const usuario = usuarioModel.buscarUsuario(parseInt(usuarioId));
+    // // BASE A - validar usuário
+    // if (usuarioId !== undefined) {
+    //   const usuario = usuarioModel.buscarUsuario(parseInt(usuarioId));
 
-      if (!usuario) {
-        return res.status(400).json({
-          erro: "Usuário não encontrado",
-        });
-      }
-    }
+    //   if (!usuario) {
+    //     return res.status(400).json({
+    //       erro: "Usuário não encontrado",
+    //     });
+    //   }
+    // }
 
     // BASE B - validar prioridade
     if (
@@ -111,11 +112,8 @@ const tarefasController = {
     }
 
     // NÍVEL 1A - limite de 2 tarefas em andamento
-    if (coluna === "andamento" && usuarioId !== undefined) {
-      const tarefasDoUsuario = tarefaModel.listarPorUsuario(
-        parseInt(usuarioId),
-      );
-
+    if (coluna === "andamento") {
+      const tarefasDoUsuario = tarefaModel.listarPorUsuario(usuarioId);
       const emAndamento = tarefasDoUsuario.filter(
         (tarefa) => tarefa.coluna === "andamento",
       ).length;
@@ -148,19 +146,14 @@ const tarefasController = {
         erro: "Tarefa não encontrada",
       });
     }
-
-    const { prioridade, coluna, usuarioId } = req.body;
-
-    // BASE A - validar usuário caso seja enviado no PUT
-    if (usuarioId !== undefined) {
-      const usuario = usuarioModel.buscarUsuario(parseInt(usuarioId));
-
-      if (!usuario) {
-        return res.status(400).json({
-          erro: "Usuário não encontrado",
-        });
-      }
+    if (tarefa.usuarioId !== req.usuario.id) {
+      return res.status(403).json({
+        erro: "Você não pode alterar uma tarefa de outro usuário",
+      });
     }
+
+    const { prioridade, coluna } = req.body;
+    const usuarioId = req.usuario.id;
 
     // BASE B - validar prioridade
     if (
@@ -207,6 +200,7 @@ const tarefasController = {
       ...req.body,
     };
 
+    delete dadosAtualizacao.usuarioId;
     // O usuário não pode definir concluidaEm manualmente
     delete dadosAtualizacao.concluidaEm;
 
@@ -231,13 +225,22 @@ const tarefasController = {
 
   // DELETE - DELETAR TAREFA
   remover(req, res) {
-    const removida = tarefaModel.remover(parseInt(req.params.id));
+    const id = parseInt(req.params.id);
+    const tarefa = tarefaModel.buscar(id);
 
-    if (!removida) {
+    if (!tarefa) {
       return res.status(404).json({
         erro: "Tarefa nao encontrada",
       });
     }
+
+    if (tarefa.usuarioId !== req.usuario.id) {
+      return res.status(403).json({
+        erro: "Você não pode remover uma tarefa de outro usuário",
+      });
+    }
+
+    const removida = tarefaModel.remover(id);
 
     res.json({
       mensagem: "Tarefa removida com sucesso",
