@@ -4,12 +4,13 @@ const usuarioModel = require("../models/usuario.model");
 const tarefasController = {
   // GET - LISTAR TAREFAS
   listar(req, res) {
-    const { coluna, usuarioId } = req.query;
-
+    const { coluna } = req.query;
+    const { usuario } = req;
+  console.log("usuario id: ", usuario.id);
     let resultado;
 
-    if (usuarioId) {
-      resultado = tarefaModel.listarPorUsuario(parseInt(usuarioId));
+    if (usuario.id) {
+      resultado = tarefaModel.listarPorUsuario(parseInt(usuario.id));
 
       // Se também tiver coluna, filtra os dois
       if (coluna) {

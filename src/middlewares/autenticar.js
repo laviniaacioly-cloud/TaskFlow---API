@@ -17,6 +17,7 @@ function autenticar(req, res, next) {
     // 4. Injetar dados do usuário na requisição
     req.usuario = payload;
 
+
     // 5. Passar para o próximo middleware ou controller
     next();
   } catch (erro) {
