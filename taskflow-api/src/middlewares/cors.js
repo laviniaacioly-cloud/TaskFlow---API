@@ -1,6 +1,6 @@
 function corsMiddleware(req, res, next) {
   // permitir apenas o dominio específico - frontend
-  res.setHeader("Access-Control-Allow-Origin", "http://www.google.com");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
   // Métodos permitidos -
   res.setHeader(
     "Access-Control-Allow-Methods",
