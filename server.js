@@ -62,11 +62,7 @@ app.use((req, res) => {
   });
 });
 
-// INICIAR O SERVIDOR LOCALMENTE
-if (require.main === module) {
-  app.listen(PORTA, () => {
-    console.log(`Servidor rodando em http://localhost:${PORTA}`);
-  });
-}
-
-module.exports = app;
+// INICIAR O SERVIDOR
+app.listen(PORTA, () => {
+  console.log(`Servidor rodando em http://localhost:${PORTA}`);
+});
