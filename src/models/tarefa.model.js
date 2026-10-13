@@ -1,79 +1,145 @@
-let tarefas = [
-  { id: 1, 
-    texto: "Estudar Node", 
-    prioridade: "alta", 
-    coluna: "afazer",
-    usuarioId: 1,
-    projetoId: 1,
-   },
-  { id: 2, 
-    texto: "Bater meta", 
-    prioridade: "baixa", 
-    coluna: "andamento",
-    usuarioId: 2,
-    projetoId: 2,
-  },
-  { id: 3, 
-    texto: "Criar API", 
-    prioridade: "media", 
-    coluna: "concluido",
-    usuarioId: 3,
-    projetoId: 3, 
-  },
-];
-
-let proximoId = 4;
+const pool = require("../database/db");
 
 module.exports = {
-  listar: () => tarefas,
-
-  listarPorColuna: (coluna) =>
-    tarefas.filter((t) => t.coluna === coluna),
-
-  listarPorUsuario: (usuarioId) =>
-    tarefas.filter((t) => t.usuarioId === usuarioId),
-
-  buscar: (id) => tarefas.find((t) => t.id === id),
-
-  adicionar: ({ texto, prioridade, coluna, usuarioId, projetoId }) => {
-    const nova = {
-      id: proximoId++,
-      texto,
-      prioridade: prioridade || "media",
-      coluna: coluna || "afazer",
-      usuarioId,
-      projetoId,
-    };
-    tarefas.push(nova);
-    return nova;
+  listar: async () => {
+    const result = await pool.query("SELECT * FROM tarefas ORDER BY id");
+    return result.rows;
   },
 
-  atualizar: (id, dados) => {
-    const idx = tarefas.findIndex((t) => t.id === id);
-    if (idx === -1) return null;
-    tarefas[idx] = { ...tarefas[idx], ...dados, id };
-    return tarefas[idx];
+  listarPorColuna: async (coluna) => {
+    const result = await pool.query(
+      "SELECT * FROM tarefas WHERE coluna = $1 ORDER BY id",
+      [coluna],
+    );
+
+    return result.rows;
   },
 
-  remover: (id) => {
-    const idx = tarefas.findIndex((t) => t.id === id);
-    if (idx === -1) return null;
-    return tarefas.splice(idx, 1)[0];
+  listarPorUsuario: async (usuarioId) => {
+    const result = await pool.query(
+      "SELECT * FROM tarefas WHERE usuario_id = $1 ORDER BY id",
+      [usuarioId],
+    );
+
+    return result.rows;
   },
 
-  estatisticas: () => {
-    const total = tarefas.length;
+  buscar: async (id) => {
+    const result = await pool.query("SELECT * FROM tarefas WHERE id = $1", [
+      id,
+    ]);
+    return result.rows[0] || null;
+  },
+
+
+atualizar: async (id, dados) => {
+  const {
+    texto,
+    prioridadeId,
+    coluna,
+    usuarioId,
+    projetoId
+  } = dados;
+
+  const result = await pool.query(
+    `UPDATE tarefas
+     SET texto = $1,
+         prioridade_id = $2,
+         coluna = $3,
+         usuario_id = $4,
+         projeto_id = $5,
+
+         iniciada_em = CASE
+           WHEN $3 = 'andamento' AND iniciada_em IS NULL
+             THEN CURRENT_TIMESTAMP
+           ELSE iniciada_em
+         END,
+
+         concluida_em = CASE
+           WHEN $3 = 'concluido' AND concluida_em IS NULL
+             THEN CURRENT_TIMESTAMP
+           ELSE concluida_em
+         END
+
+     WHERE id = $6
+     RETURNING *`,
+    [texto, prioridadeId, coluna, usuarioId, projetoId, id]
+  );
+
+  return result.rows[0] || null;
+},
+
+
+  atualizar: async (id, dados) => {
+    const { texto, prioridadeId, coluna, usuarioId, projetoId } = dados;
+
+    const result = await pool.query(
+      `UPDATE tarefas
+     SET texto = $1,
+         prioridade_id = $2,
+         coluna = $3,
+         usuario_id = $4,
+         projeto_id = $5
+     WHERE id = $6
+     RETURNING *`,
+      [texto, prioridadeId, coluna, usuarioId, projetoId, id],
+    );
+
+    return result.rows[0] || null;
+  },
+
+  remover: async (id) => {
+    const result = await pool.query(
+      "DELETE FROM tarefas WHERE id=$1 RETURNING *",
+      [id],
+    );
+    return result.rows[0] || null;
+  },
+
+  estatisticas: async () => {
+    const totalResult = await pool.query(
+      "SELECT COUNT(*) AS total FROM tarefas",
+    );
+
+    const colunaResult = await pool.query(
+      `SELECT coluna, COUNT(*) AS total
+     FROM tarefas
+     GROUP BY coluna`,
+    );
+
+    const prioridadeResult = await pool.query(
+      `SELECT p.descricao, COUNT(t.id) AS total
+     FROM prioridades p
+     LEFT JOIN tarefas t ON t.prioridade_id = p.id
+     GROUP BY p.id, p.descricao`,
+    );
+
+    const total = Number(totalResult.rows[0].total);
+
     const porColuna = {
-      afazer: tarefas.filter((t) => t.coluna === "afazer").length,
-      andamento: tarefas.filter((t) => t.coluna === "andamento").length,
-      concluido: tarefas.filter((t) => t.coluna === "concluido").length,
+      afazer: 0,
+      andamento: 0,
+      concluido: 0,
     };
+
+    colunaResult.rows.forEach((item) => {
+      porColuna[item.coluna] = Number(item.total);
+    });
+
     const porPrioridade = {
-      alta: tarefas.filter((tarefa) => tarefa.prioridade === "alta").length,
-      media: tarefas.filter((tarefa) => tarefa.prioridade === "media").length,
-      baixa: tarefas.filter((tarefa) => tarefa.prioridade === "baixa").length,
+      alta: 0,
+      media: 0,
+      baixa: 0,
     };
-    const comMaisTarefas = Object.entries(porColuna).sort((a, b) => b[1] - a[1])
+
+    prioridadeResult.rows.forEach((item) => {
+      porPrioridade[item.descricao] = Number(item.total);
+    });
+
+    const comMaisTarefas = Object.entries(porColuna).sort(
+      (a, b) => b[1] - a[1],
+    );
+
     return {
       total,
       porColuna,
@@ -82,19 +148,32 @@ module.exports = {
     };
   },
 
-  resumo: () => {
-    const total = tarefas.length;
-    const afazer = tarefas.filter((t) => t.coluna === "afazer").length;
-    const andamento = tarefas.filter((t) => t.coluna === "andamento").length;
-    const concluido = tarefas.filter((t) => t.coluna === "concluido").length;
+  resumo: async () => {
+    const result = await pool.query(
+      `SELECT
+       COUNT(*) AS total,
+       COUNT(*) FILTER (WHERE t.coluna = 'afazer') AS afazer,
+       COUNT(*) FILTER (WHERE t.coluna = 'andamento') AS andamento,
+       COUNT(*) FILTER (WHERE t.coluna = 'concluido') AS concluido,
+       COUNT(*) FILTER (WHERE p.descricao = 'alta') AS alta,
+       COUNT(*) FILTER (WHERE p.descricao = 'media') AS media,
+       COUNT(*) FILTER (WHERE p.descricao = 'baixa') AS baixa
+     FROM tarefas t
+     LEFT JOIN prioridades p ON t.prioridade_id = p.id`,
+    );
+
+    const dados = result.rows[0];
+
     const prioridades = {
-      alta: tarefas.filter((tarefa) => tarefa.prioridades === "alta").length,
-      media: tarefas.filter((tarefa) => tarefa.prioridade === "media").length,
-      baixa: tarefas.filter((tarefa) => tarefa.prioridade === "baixa").length,
+      alta: Number(dados.alta),
+      media: Number(dados.media),
+      baixa: Number(dados.baixa),
     };
+
     const prioridadeMaisComum = Object.entries(prioridades).sort(
       (a, b) => b[1] - a[1],
     )[0][0];
-    return `Você tem ${total} tarefa(s): ${concluido} concluida(s), ${andamento} em andamento  e ${afazer} a fazer. A prioridade mais comum: ${prioridadeMaisComum}`;
+
+    return `Você tem ${dados.total} tarefa(s): ${dados.concluido} concluída(s), ${dados.andamento} em andamento e ${dados.afazer} a fazer. A prioridade mais comum: ${prioridadeMaisComum}`;
   },
-}
+};
