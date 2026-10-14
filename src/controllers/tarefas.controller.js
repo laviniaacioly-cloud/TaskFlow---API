@@ -207,22 +207,6 @@ const tarefasController = {
         });
       }
 
-      if (coluna === "andamento" && tarefa.coluna !== "andamento") {
-        const tarefasDoUsuario = await tarefaModel.listarPorUsuario(
-          req.usuario.id,
-        );
-
-        const emAndamento = tarefasDoUsuario.filter(
-          (item) => item.coluna === "andamento",
-        ).length;
-
-        if (emAndamento >= 2) {
-          return res.status(400).json({
-            erro: "Limite de 2 tarefas em andamento por usuário atingido",
-          });
-        }
-      }
-
       let prioridadeId = tarefa.prioridade_id;
 
       if (prioridade !== undefined) {

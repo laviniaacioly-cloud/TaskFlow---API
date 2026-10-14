@@ -31,44 +31,19 @@ module.exports = {
     return result.rows[0] || null;
   },
 
+  adicionar: async (dados) => {
+    const { texto, prioridadeId, coluna, usuarioId, projetoId } = dados;
 
-atualizar: async (id, dados) => {
-  const {
-    texto,
-    prioridadeId,
-    coluna,
-    usuarioId,
-    projetoId
-  } = dados;
+    const result = await pool.query(
+      `INSERT INTO tarefas
+        (texto, prioridade_id, coluna, usuario_id, projeto_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [texto, prioridadeId, coluna, usuarioId, projetoId],
+    );
 
-  const result = await pool.query(
-    `UPDATE tarefas
-     SET texto = $1,
-         prioridade_id = $2,
-         coluna = $3,
-         usuario_id = $4,
-         projeto_id = $5,
-
-         iniciada_em = CASE
-           WHEN $3 = 'andamento' AND iniciada_em IS NULL
-             THEN CURRENT_TIMESTAMP
-           ELSE iniciada_em
-         END,
-
-         concluida_em = CASE
-           WHEN $3 = 'concluido' AND concluida_em IS NULL
-             THEN CURRENT_TIMESTAMP
-           ELSE concluida_em
-         END
-
-     WHERE id = $6
-     RETURNING *`,
-    [texto, prioridadeId, coluna, usuarioId, projetoId, id]
-  );
-
-  return result.rows[0] || null;
-},
-
+    return result.rows[0];
+  },
 
   atualizar: async (id, dados) => {
     const { texto, prioridadeId, coluna, usuarioId, projetoId } = dados;
@@ -79,7 +54,20 @@ atualizar: async (id, dados) => {
          prioridade_id = $2,
          coluna = $3,
          usuario_id = $4,
-         projeto_id = $5
+         projeto_id = $5,
+
+        iniciada_em = CASE
+          WHEN CAST($3 AS varchar) = 'andamento' AND iniciada_em IS NULL
+            THEN CURRENT_TIMESTAMP
+          ELSE iniciada_em
+        END,
+
+        concluida_em = CASE
+          WHEN CAST($3 AS varchar) = 'concluido' AND concluida_em IS NULL
+            THEN CURRENT_TIMESTAMP
+          ELSE concluida_em
+        END
+
      WHERE id = $6
      RETURNING *`,
       [texto, prioridadeId, coluna, usuarioId, projetoId, id],
