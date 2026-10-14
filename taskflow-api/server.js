@@ -1,9 +1,9 @@
 //  CARREGAR VARIÁVEIS DO .ENV
-require('dotenv').config();
+require("dotenv").config();
 
 // CONFIGURAÇÃO DO EXPRESS
-const express = require("express");  
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 const app = express();
 const PORTA = process.env.PORTA || 3000;
 
@@ -11,23 +11,35 @@ const PORTA = process.env.PORTA || 3000;
 const tarefasRoutes = require("./src/routes/tarefas.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
-const authRoutes = require('./src/routes/auth.routes');
+const authRoutes = require("./src/routes/auth.routes");
 
 // IMPORTAR MIDDLEWARE DE AUTENTICAÇÃO
-const autenticar = require('./src/middlewares/autenticar');
+const autenticar = require("./src/middlewares/autenticar");
 
 // IMPORTAR MIDDLEWARES
-const validarContentType = require('./src/middlewares/validarContentType');
-const logger = require('./src/middlewares/logger');
-const temporizador = require('./src/middlewares/temporizador');
+const validarContentType = require("./src/middlewares/validarContentType");
+const logger = require("./src/middlewares/logger");
+const temporizador = require("./src/middlewares/temporizador");
+
+const pool = require("./src/database/db");
+
+pool.query("SELECT NOW()", (err, res) => {
+  if (err) {
+    console.error("Erro ao conectar:", err);
+  } else {
+    console.log("Banco conectado:", res.rows[0].now);
+  }
+});
 
 // CORS - CONFIGURAÇÃO
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    maxAge: 86400,
+  }),
+);
 
 // Permite que o Express receba dados em JSON
 app.use(express.json());
@@ -38,7 +50,7 @@ app.use(logger);
 app.use(temporizador);
 
 //ROTA DE LOGIN
-app.use('/auth', authRoutes);
+app.use("/auth", authRoutes);
 
 //  ROTA INICIAL DA API
 app.get("/", (req, res) => {
