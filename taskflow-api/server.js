@@ -60,7 +60,7 @@ app.get("/", (req, res) => {
 });
 
 // IMPORTAR - USUÁRIOS ROUTER
-app.use("/usuarios", autenticar, usuariosRoutes);
+app.use("/usuarios", usuariosRoutes);
 
 // ROUTER.GET VIRA GET /TAREFAS - TAREFAS ROUTES
 app.use("/tarefas", autenticar, tarefasRoutes);
