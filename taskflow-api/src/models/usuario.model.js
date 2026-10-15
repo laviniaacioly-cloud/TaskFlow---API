@@ -29,12 +29,12 @@ module.exports = {
   },
 
   // POST - Adicionar usuário
-  adicionarUsuario: async ({ nome, email, senha }) => {
+  adicionarUsuario: async ({ nome, email, senha_hash }) => {
     const result = await pool.query(
       `INSERT INTO usuario (nome, email, senha_hash)
        VALUES ($1, $2, $3)
        RETURNING id, nome, email`,
-      [nome, email, senha]
+      [nome, email, senha_hash]
     );
     return result.rows[0];
   },

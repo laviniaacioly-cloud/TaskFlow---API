@@ -21,6 +21,8 @@ const validarContentType = require("./src/middlewares/validarContentType");
 const logger = require("./src/middlewares/logger");
 const temporizador = require("./src/middlewares/temporizador");
 
+const tratarErros = require("./src/middlewares/erro.middleware");
+
 const pool = require("./src/database/db");
 
 pool.query("SELECT NOW()", (err, res) => {
@@ -73,6 +75,8 @@ app.use((req, res) => {
     caminho: req.url,
   });
 });
+
+app.use(tratarErros);
 
 // INICIAR O SERVIDOR
 app.listen(PORTA, () => {

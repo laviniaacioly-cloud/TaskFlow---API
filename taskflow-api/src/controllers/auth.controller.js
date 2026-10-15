@@ -1,13 +1,13 @@
 const jwt = require("jsonwebtoken");
 const usuarioModel = require("../models/usuario.model");
 
-const authController = {
+const authController = { 
   async login(req, res) {
     try {
-      const { email, senha } = req.body;
+      const { email, senha_hash } = req.body;
 
       // 1. Validar os campos
-      if (!email || !senha) {
+      if (!email || !senha_hash) {
         return res.status(400).json({
           erro: "Email e senha são obrigatórios",
         });
@@ -23,7 +23,7 @@ const authController = {
       }
 
       // 3. Verificar a senha
-      if (usuario.senha_hash !== senha) {
+      if (usuario.senha_hash !== senha_hash) {
         return res.status(401).json({
           erro: "Credenciais inválidas",
         });

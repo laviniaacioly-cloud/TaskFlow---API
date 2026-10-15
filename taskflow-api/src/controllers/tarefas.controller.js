@@ -1,6 +1,6 @@
 const tarefaModel = require("../models/tarefa.model");
 const usuarioModel = require("../models/usuario.model");
-
+const criarErro = require("../../utils/criarErro");
 const tarefasController = {
   // GET - LISTAR TAREFAS
   async listar(req, res) {
@@ -26,8 +26,7 @@ const tarefasController = {
 
       res.json(resultado);
     } catch (erro) {
-      console.error("Erro ao listar tarefas:", erro);
-      res.status(500).json({ erro: "Erro ao listar tarefas" });
+      throw erro;
     }
   },
 
@@ -56,8 +55,7 @@ const tarefasController = {
         rankingUsuarios,
       });
     } catch (erro) {
-      console.error("Erro ao buscar estatísticas:", erro);
-      res.status(500).json({ erro: "Erro ao buscar estatísticas" });
+      throw erro;
     }
   },
 
@@ -67,8 +65,7 @@ const tarefasController = {
       const resumo = await tarefaModel.resumo();
       res.json(resumo);
     } catch (erro) {
-      console.error("Erro ao gerar resumo:", erro);
-      res.status(500).json({ erro: "Erro ao gerar resumo" });
+      throw erro;
     }
   },
 
@@ -78,15 +75,12 @@ const tarefasController = {
       const tarefa = await tarefaModel.buscar(parseInt(req.params.id, 10));
 
       if (!tarefa) {
-        return res.status(404).json({
-          erro: "Tarefa não encontrada",
-        });
+        throw criarErro(404, "Tarefa não encontrada");
       }
 
       res.json(tarefa);
     } catch (erro) {
-      console.error("Erro ao buscar tarefa:", erro);
-      res.status(500).json({ erro: "Erro ao buscar tarefa" });
+      throw erro;
     }
   },
 
@@ -125,8 +119,7 @@ const tarefasController = {
 
       // Limite de 2 tarefas em andamento por usuário
       if (coluna === "andamento") {
-        const tarefasDoUsuario =
-          await tarefaModel.listarPorUsuario(usuarioId);
+        const tarefasDoUsuario = await tarefaModel.listarPorUsuario(usuarioId);
 
         const emAndamento = tarefasDoUsuario.filter(
           (tarefa) => tarefa.coluna === "andamento",
@@ -147,10 +140,10 @@ const tarefasController = {
         projetoId,
       });
 
+      // Sucesso: tarefa criada
       res.status(201).json(novaTarefa);
     } catch (erro) {
-      console.error("Erro ao criar tarefa:", erro);
-      res.status(500).json({ erro: "Erro ao criar tarefa" });
+      throw erro;
     }
   },
 
@@ -161,9 +154,7 @@ const tarefasController = {
       const tarefa = await tarefaModel.buscar(id);
 
       if (!tarefa) {
-        return res.status(404).json({
-          erro: "Tarefa não encontrada",
-        });
+        throw criarErro(404, "Tarefa não encontrada");
       }
 
       // O PostgreSQL retorna usuario_id, em snake_case.
@@ -199,17 +190,11 @@ const tarefasController = {
       }
 
       // Limite de 2 tarefas em andamento
-      if (
-        coluna === "andamento" &&
-        tarefa.coluna !== "andamento"
-      ) {
-        const tarefasDoUsuario =
-          await tarefaModel.listarPorUsuario(usuarioId);
+      if (coluna === "andamento" && tarefa.coluna !== "andamento") {
+        const tarefasDoUsuario = await tarefaModel.listarPorUsuario(usuarioId);
 
         const emAndamento = tarefasDoUsuario.filter(
-          (t) =>
-            t.coluna === "andamento" &&
-            Number(t.id) !== id,
+          (t) => t.coluna === "andamento" && Number(t.id) !== id,
         ).length;
 
         if (emAndamento >= 2) {
@@ -227,21 +212,15 @@ const tarefasController = {
       delete dadosAtualizacao.concluida_em;
 
       // O model atualiza as colunas que ele conhece.
-      const atualizada = await tarefaModel.atualizar(
-        id,
-        dadosAtualizacao,
-      );
+      const atualizada = await tarefaModel.atualizar(id, dadosAtualizacao);
 
       if (!atualizada) {
-        return res.status(404).json({
-          erro: "Tarefa não encontrada",
-        });
+        throw criarErro(404, "Tarefa não encontrada");
       }
 
       res.json(atualizada);
     } catch (erro) {
-      console.error("Erro ao atualizar tarefa:", erro);
-      res.status(500).json({ erro: "Erro ao atualizar tarefa" });
+      throw erro;
     }
   },
 
@@ -252,9 +231,7 @@ const tarefasController = {
       const tarefa = await tarefaModel.buscar(id);
 
       if (!tarefa) {
-        return res.status(404).json({
-          erro: "Tarefa não encontrada",
-        });
+        throw criarErro(404, "Tarefa não encontrada");
       }
 
       // O PostgreSQL retorna usuario_id, em snake_case.
@@ -266,15 +243,12 @@ const tarefasController = {
         });
       }
 
-      const removida = await tarefaModel.remover(id);
+      await tarefaModel.remover(id);
 
-      res.json({
-        mensagem: "Tarefa removida com sucesso",
-        tarefa: removida,
-      });
+      // Sucesso: excluída sem corpo na resposta
+      res.status(204).end();
     } catch (erro) {
-      console.error("Erro ao remover tarefa:", erro);
-      res.status(500).json({ erro: "Erro ao remover tarefa" });
+      throw erro;
     }
   },
 };

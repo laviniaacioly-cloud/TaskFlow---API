@@ -36,13 +36,13 @@ const usuariosController = {
   // POST - CRIAR USUÁRIO
   async criar(req, res) {
     try {
-      const { nome, email, senha } = req.body;
+      const { nome, email, senha_hash } = req.body;
 
-      if (!nome || !email || !senha) {
-        return res.status(400).json({
-          erro: "Nome, e-mail e senha são obrigatórios.",
-        });
-      }
+      // if (!nome || !email || !senha) {
+      //   return res.status(400).json({
+      //     erro: "Nome, e-mail e senha são obrigatórios.",
+      //   });
+      // }
 
       const emailExistente = await usuarioModel.buscarPorEmail(email);
 
@@ -55,7 +55,7 @@ const usuariosController = {
       const novoUsuario = await usuarioModel.adicionarUsuario({
         nome,
         email,
-        senha,
+        senha_hash,
       });
 
       res.status(201).json(novoUsuario);

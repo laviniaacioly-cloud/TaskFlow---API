@@ -4,7 +4,6 @@ const somar = require('./calcular');
 console.log(somar(2, 3));  // 5
 console.log(somar(10, 7)); // 17
 
-
 const tarefasUtils = require('./utils/tarefas');
 
 // Destructuring — extrair funções do objeto:
