@@ -7,6 +7,8 @@ const tarefasController = require("../controllers/tarefas.controller");
 const validar = require("../middlewares/validar");
 const schemas = require("../middlewares/schemas");
 
+const idValido = validar(schemas.id, "params");
+
 // GETs - LISTAR TAREFAS
 router.get("/", tarefasController.listar);
 
@@ -25,15 +27,15 @@ router.post(
 // EDITAR TAREFAS - PUT
 router.put(
   "/:id",
-  autenticar,
+  idValido,
   validar(schemas.tarefa),
   tarefasController.atualizar
 );
 // DELETAR TAREFAS - DELETE
-router.delete("/:id", autenticar, tarefasController.remover);
+router.delete("/:id", idValido, tarefasController.remover);
 
 // BUSCAR POR ID
-router.get("/:id", autenticar, tarefasController.buscarPorId);
+router.get("/:id", idValido, tarefasController.buscarPorId);
 
 //EXPORTR ROTAS E TAREFAS
 module.exports = router;

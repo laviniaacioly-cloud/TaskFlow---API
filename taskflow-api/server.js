@@ -24,6 +24,7 @@ const temporizador = require("./src/middlewares/temporizador");
 const tratarErros = require("./src/middlewares/erro.middleware");
 
 const pool = require("./src/database/db");
+const criarErro = require("./utils/criarErro");
 
 pool.query("SELECT NOW()", (err, res) => {
   if (err) {
@@ -67,13 +68,9 @@ app.use("/tarefas", autenticar, tarefasRoutes);
 
 app.use("/projetos", autenticar, projetosRoutes);
 
-//  Rota 404 — DEVE SER A ÚLTIMA SEMPRE
-app.use((req, res) => {
-  res.status(404).json({
-    erro: "Rota não encontrada",
-    metodo: req.method,
-    caminho: req.url,
-  });
+app.use ((req, res) => {
+  const rota = `${req.method} ${req.url}`;
+  throw criarErro(404, `Rota ${rota} não encontrada`);
 });
 
 app.use(tratarErros);
