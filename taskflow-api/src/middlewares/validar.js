@@ -27,6 +27,12 @@ function validar(schema, origem) {
       //   );
       // }
 
+      if (regras.enum && !regras.enum.includes(valor)) {
+        erros.push(
+          `O campo '${campo}' deve ser um de: ${regras.enum.join(", ")}`,
+        );
+      }
+
       if (regras.tipo === "inteiro") {
         const numero = typeof valor === "string" ? Number(valor) : valor;
 

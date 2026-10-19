@@ -4,7 +4,6 @@ module.exports = {
   // Listar todas as tarefas
   listar: async () => {
     const result = await pool.query("SELECT * FROM tarefas ORDER BY id");
-
     return result.rows;
   },
 

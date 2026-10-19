@@ -1,9 +1,16 @@
 const schemas = {
   id: {
     id: {
-      obrigatorio: true, 
-      tipo: 'inteiro'
-    }
+      obrigatorio: true,
+      tipo: "inteiro",
+    },
+  },
+
+  filtroTarefas: {
+    usuarioId: {
+      obrigatorio: false,
+      tipo: "inteiro",
+    },
   },
 
   tarefa: {
@@ -34,9 +41,8 @@ const schemas = {
 
   descricao: {
     obrigatorio: false,
-    tipo: 'string',
-    maxLength: 200
-  }
-
+    tipo: "string",
+    maxLength: 200,
+  },
 };
 module.exports = schemas;

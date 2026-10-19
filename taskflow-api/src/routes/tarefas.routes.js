@@ -10,7 +10,11 @@ const schemas = require("../middlewares/schemas");
 const idValido = validar(schemas.id, "params");
 
 // GETs - LISTAR TAREFAS
-router.get("/", tarefasController.listar);
+router.get(
+  "/",
+  validar(schemas.filtroTarefas, "query"),
+  tarefasController.listar
+);
 
 //  ROTAS DE ESATATISTICAS
 router.get("/estatisticas", tarefasController.estatisticas);

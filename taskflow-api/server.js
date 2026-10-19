@@ -12,6 +12,7 @@ const tarefasRoutes = require("./src/routes/tarefas.routes");
 const usuariosRoutes = require("./src/routes/usuarios.routes");
 const projetosRoutes = require("./src/routes/projetos.routes");
 const authRoutes = require("./src/routes/auth.routes");
+const prioridadesRoutes = require("./src/routes/prioridades.routes");
 
 // IMPORTAR MIDDLEWARE DE AUTENTICAÇÃO
 const autenticar = require("./src/middlewares/autenticar");
@@ -67,6 +68,8 @@ app.use("/usuarios", usuariosRoutes);
 app.use("/tarefas", autenticar, tarefasRoutes);
 
 app.use("/projetos", autenticar, projetosRoutes);
+
+app.use("/prioridades", prioridadesRoutes);
 
 app.use ((req, res) => {
   const rota = `${req.method} ${req.url}`;
