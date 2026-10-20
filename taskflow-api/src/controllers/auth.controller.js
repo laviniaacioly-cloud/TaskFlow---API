@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const usuarioModel = require("../models/usuario.model");
 
-const authController = { 
+const authController = {
   async login(req, res) {
     try {
       const { email, senha_hash } = req.body;
@@ -18,14 +18,17 @@ const authController = {
 
       if (!usuario) {
         return res.status(401).json({
-          erro: "Credenciais inválidas",
+          erro: {
+            mensagem: "E-mail ou senha incorretos",
+          },
         });
       }
 
-      // 3. Verificar a senha
       if (usuario.senha_hash !== senha_hash) {
         return res.status(401).json({
-          erro: "Credenciais inválidas",
+          erro: {
+            mensagem: "E-mail ou senha incorretos",
+          },
         });
       }
 
@@ -33,7 +36,7 @@ const authController = {
       const token = jwt.sign(
         { id: usuario.id, nome: usuario.nome },
         process.env.JWT_SECRET,
-        { expiresIn: "8h" }
+        { expiresIn: "8h" },
       );
 
       // 5. Retornar o token e os dados públicos
