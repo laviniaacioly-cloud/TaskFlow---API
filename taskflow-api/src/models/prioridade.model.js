@@ -22,6 +22,16 @@ const prioridadeModel = {
 
     return result.rows;
   },
+  // Listar os níveis de prioridade
+  async listarTodas() {
+    const result = await pool.query(`
+      SELECT id, descricao
+      FROM prioridades
+      ORDER BY id
+    `);
+
+    return result.rows;
+  },
 };
 
 module.exports = prioridadeModel;

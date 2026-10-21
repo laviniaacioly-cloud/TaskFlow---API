@@ -36,29 +36,53 @@ module.exports = {
     return result.rows[0] || null;
   },
 
-  adicionar: async ({ texto, prioridade, coluna, usuarioId, projetoId }) => {
+  // Adicionar uma tarefa
+  adicionar: async ({
+    texto,
+    prioridade_id,
+    prioridade,
+    coluna,
+    usuario_id,
+    usuarioId,
+    projeto_id,
+    projetoId,
+  }) => {
     const prioridadesIds = {
       baixa: 1,
       media: 2,
       alta: 3,
     };
 
-    const prioridadeId = prioridadesIds[prioridade || "media"];
+    const prioridadeId = prioridade_id ?? prioridadesIds[prioridade || "media"];
+
+    const usuarioIdFinal = usuario_id ?? usuarioId;
+    const projetoIdFinal = projeto_id ?? projetoId;
 
     const result = await pool.query(
       `INSERT INTO tarefas
-      (texto, prioridade_id, coluna, usuario_id, projeto_id)
-     VALUES ($1, $2, $3, $4, $5)
-     RETURNING *`,
-      [texto, prioridadeId, coluna || "afazer", usuarioId, projetoId],
+       (texto, prioridade_id, coluna, usuario_id, projeto_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [texto, prioridadeId, coluna || "afazer", usuarioIdFinal, projetoIdFinal],
     );
 
     return result.rows[0];
   },
 
   // Atualizar uma tarefa
+  
+  // Atualizar uma tarefa
   atualizar: async (id, dados) => {
-    const { texto, prioridade, coluna, usuarioId, projetoId } = dados;
+    const {
+      texto,
+      prioridade,
+      prioridade_id,
+      coluna,
+      usuarioId,
+      usuario_id,
+      projetoId,
+      projeto_id,
+    } = dados;
 
     const prioridadesIds = {
       baixa: 1,
@@ -67,7 +91,11 @@ module.exports = {
     };
 
     const prioridadeId =
-      prioridade !== undefined ? prioridadesIds[prioridade] : undefined;
+      prioridade_id ??
+      (prioridade !== undefined ? prioridadesIds[prioridade] : undefined);
+
+    const usuarioIdFinal = usuario_id ?? usuarioId;
+    const projetoIdFinal = projeto_id ?? projetoId;
 
     const tarefaAtual = await pool.query(
       "SELECT * FROM tarefas WHERE id = $1",
@@ -86,11 +114,16 @@ module.exports = {
       iniciadaEm = new Date();
     }
 
-    // Registra a data ao concluir pela primeira vez
-    let concluidaEm = atual.concluida_em;
-    if (coluna === "concluido" && !concluidaEm) {
-      concluidaEm = new Date();
-    }
+// Registra a data ao concluir e limpa ao reabrir a tarefa
+let concluidaEm = atual.concluida_em;
+
+if (coluna === "concluido") {
+  if (!concluidaEm) {
+    concluidaEm = new Date();
+  }
+} else if (coluna === "andamento" || coluna === "afazer") {
+  concluidaEm = null;
+}
 
     const result = await pool.query(
       `UPDATE tarefas
@@ -107,8 +140,8 @@ module.exports = {
         texto ?? atual.texto,
         prioridadeId ?? atual.prioridade_id,
         coluna ?? atual.coluna,
-        usuarioId ?? atual.usuario_id,
-        projetoId ?? atual.projeto_id,
+        usuarioIdFinal ?? atual.usuario_id,
+        projetoIdFinal ?? atual.projeto_id,
         iniciadaEm,
         concluidaEm,
         id,
@@ -117,6 +150,7 @@ module.exports = {
 
     return result.rows[0] || null;
   },
+
 
   // Remover uma tarefa
   remover: async (id) => {

@@ -84,20 +84,34 @@ const tarefasController = {
     }
   },
 
+
   // POST - CRIAR TAREFA
   async criar(req, res) {
     try {
-      const { texto, prioridade, coluna, projetoId } = req.body;
-      const usuarioId = req.usuario.id;
+      const {
+        texto,
+        prioridade_id,
+        prioridade,
+        coluna,
+        projeto_id,
+        projetoId,
+      } = req.body;
 
-      // Validação do texto
+      const usuarioId = req.usuario.id;
+      const projetoIdFinal = projeto_id ?? projetoId;
+
       if (!texto) {
         return res.status(400).json({
-          erro: "texto obrigatorio",
+          erro: "Texto obrigatório",
         });
       }
 
-      // Validar prioridade
+      if (projetoIdFinal == null) {
+        return res.status(400).json({
+          erro: "O projeto é obrigatório",
+        });
+      }
+
       if (
         prioridade !== undefined &&
         !["alta", "media", "baixa"].includes(prioridade)
@@ -107,7 +121,6 @@ const tarefasController = {
         });
       }
 
-      // Validar coluna
       if (
         coluna !== undefined &&
         !["afazer", "andamento", "concluido"].includes(coluna)
@@ -117,35 +130,22 @@ const tarefasController = {
         });
       }
 
-      // Limite de 2 tarefas em andamento por usuário
-      if (coluna === "andamento") {
-        const tarefasDoUsuario = await tarefaModel.listarPorUsuario(usuarioId);
-
-        const emAndamento = tarefasDoUsuario.filter(
-          (tarefa) => tarefa.coluna === "andamento",
-        ).length;
-
-        if (emAndamento >= 2) {
-          return res.status(400).json({
-            erro: "Limite de 2 tarefas em andamento por usuário atingido",
-          });
-        }
-      }
 
       const novaTarefa = await tarefaModel.adicionar({
         texto,
+        prioridade_id,
         prioridade,
         coluna,
         usuarioId,
-        projetoId,
+        projetoId: projetoIdFinal,
       });
 
-      // Sucesso: tarefa criada
       res.status(201).json(novaTarefa);
     } catch (erro) {
       throw erro;
     }
   },
+
 
   // PUT - EDITAR TAREFA
   async atualizar(req, res) {
@@ -159,7 +159,8 @@ const tarefasController = {
 
       // O PostgreSQL retorna usuario_id, em snake_case.
       const donoId = tarefa.usuario_id ?? tarefa.usuarioId;
-
+        console.log("Dono da tarefa:", donoId);
+        console.log("Usuário autenticado:", req.usuario.id);
       if (Number(donoId) !== Number(req.usuario.id)) {
         return res.status(403).json({
           erro: "Você não pode alterar uma tarefa de outro usuário",
@@ -189,25 +190,9 @@ const tarefasController = {
         });
       }
 
-      // Limite de 2 tarefas em andamento
-      if (coluna === "andamento" && tarefa.coluna !== "andamento") {
-        const tarefasDoUsuario = await tarefaModel.listarPorUsuario(usuarioId);
-
-        const emAndamento = tarefasDoUsuario.filter(
-          (t) => t.coluna === "andamento" && Number(t.id) !== id,
-        ).length;
-
-        if (emAndamento >= 2) {
-          return res.status(400).json({
-            erro: "Limite de 2 tarefas em andamento por usuário atingido",
-          });
-        }
-      }
 
       const dadosAtualizacao = { ...req.body };
 
-      delete dadosAtualizacao.usuarioId;
-      delete dadosAtualizacao.usuario_id;
       delete dadosAtualizacao.concluidaEm;
       delete dadosAtualizacao.concluida_em;
 
