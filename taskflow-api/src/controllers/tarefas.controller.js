@@ -1,24 +1,17 @@
 const tarefaModel = require("../models/tarefa.model");
 const usuarioModel = require("../models/usuario.model");
 const criarErro = require("../../utils/criarErro");
+
 const tarefasController = {
   // GET - LISTAR TAREFAS
+
   async listar(req, res) {
     try {
       const { coluna } = req.query;
-      const usuario = req.usuario;
 
       let resultado;
 
-      if (usuario?.id) {
-        resultado = await tarefaModel.listarPorUsuario(
-          parseInt(usuario.id, 10),
-        );
-
-        if (coluna) {
-          resultado = resultado.filter((t) => t.coluna === coluna);
-        }
-      } else if (coluna) {
+      if (coluna) {
         resultado = await tarefaModel.listarPorColuna(coluna);
       } else {
         resultado = await tarefaModel.listar();
@@ -84,7 +77,6 @@ const tarefasController = {
     }
   },
 
-
   // POST - CRIAR TAREFA
   async criar(req, res) {
     try {
@@ -130,7 +122,6 @@ const tarefasController = {
         });
       }
 
-
       const novaTarefa = await tarefaModel.adicionar({
         texto,
         prioridade_id,
@@ -146,7 +137,7 @@ const tarefasController = {
     }
   },
 
-
+ 
   // PUT - EDITAR TAREFA
   async atualizar(req, res) {
     try {
@@ -157,18 +148,7 @@ const tarefasController = {
         throw criarErro(404, "Tarefa não encontrada");
       }
 
-      // O PostgreSQL retorna usuario_id, em snake_case.
-      const donoId = tarefa.usuario_id ?? tarefa.usuarioId;
-        console.log("Dono da tarefa:", donoId);
-        console.log("Usuário autenticado:", req.usuario.id);
-      if (Number(donoId) !== Number(req.usuario.id)) {
-        return res.status(403).json({
-          erro: "Você não pode alterar uma tarefa de outro usuário",
-        });
-      }
-
       const { prioridade, coluna } = req.body;
-      const usuarioId = req.usuario.id;
 
       // Validar prioridade
       if (
@@ -190,14 +170,15 @@ const tarefasController = {
         });
       }
 
-
       const dadosAtualizacao = { ...req.body };
 
       delete dadosAtualizacao.concluidaEm;
       delete dadosAtualizacao.concluida_em;
 
-      // O model atualiza as colunas que ele conhece.
-      const atualizada = await tarefaModel.atualizar(id, dadosAtualizacao);
+      const atualizada = await tarefaModel.atualizar(
+        id,
+        dadosAtualizacao,
+      );
 
       if (!atualizada) {
         throw criarErro(404, "Tarefa não encontrada");
@@ -209,6 +190,7 @@ const tarefasController = {
     }
   },
 
+
   // DELETE - DELETAR TAREFA
   async remover(req, res) {
     try {
@@ -217,15 +199,6 @@ const tarefasController = {
 
       if (!tarefa) {
         throw criarErro(404, "Tarefa não encontrada");
-      }
-
-      // O PostgreSQL retorna usuario_id, em snake_case.
-      const donoId = tarefa.usuario_id ?? tarefa.usuarioId;
-
-      if (Number(donoId) !== Number(req.usuario.id)) {
-        return res.status(403).json({
-          erro: "Você não pode remover uma tarefa de outro usuário",
-        });
       }
 
       await tarefaModel.remover(id);
