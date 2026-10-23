@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model clientes {
+  id             Int       @id(map: "pedidos_pk") @default(autoincrement())
+  nome           String    @db.VarChar(100)
+  data_nascimeto DateTime  @db.Date
+  pedidos        pedidos[]
+}
+
+model comentarios {
+  id         Int       @id @default(autoincrement())
+  texto      String
+  tarefa_id  Int
+  usuario_id Int
+  criado_em  DateTime? @default(now()) @db.Timestamp(6)
+  tarefas    tarefas   @relation(fields: [tarefa_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuario    usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model pedidos {
+  data         DateTime?      @db.Timestamp(6)
+  id_cliente   Int?
+  id           Int            @id(map: "pedido_pk") @default(autoincrement())
+  clientes     clientes?      @relation(fields: [id_cliente], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidos_clientes_fk")
+  pedidositens pedidositens[]
+}
+
+model pedidositens {
+  id         Int       @id(map: "pedidositens_pk") @default(autoincrement())
+  desconto   Decimal   @db.Decimal(18, 2)
+  valor      Decimal   @db.Decimal(18, 2)
+  quantidade Decimal   @db.Decimal(18, 2)
+  id_pedido  Int?
+  id_produto Int?
+  pedidos    pedidos?  @relation(fields: [id_pedido], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidositens_pedidos_fk")
+  produtos   produtos? @relation(fields: [id_produto], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "pedidositens_produtos_fk")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model prioridades {
+  id        Int       @id(map: "prioridades_pk") @default(autoincrement())
+  descricao String    @db.VarChar
+  criado_em String?   @default(dbgenerated("now()")) @db.VarChar
+  ativo     Boolean?
+  cor       String    @default("#94A3B8") @db.VarChar(7)
+  tarefas   tarefas[]
+}
+
+model produtos {
+  id               Int             @id(map: "produtos_pk") @default(autoincrement())
+  descricao        String?         @db.VarChar(100)
+  id_unidademedida Int?
+  pedidositens     pedidositens[]
+  unidadesmedida   unidadesmedida? @relation(fields: [id_unidademedida], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "produtos_unudadesmedida_fk")
+}
+
+model projetos {
+  id         Int       @id @default(autoincrement())
+  nome       String    @db.VarChar(100)
+  descricao  String?
+  usuario_id Int
+  criado_em  DateTime? @default(now()) @db.Timestamp(6)
+  usuario    usuario   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tarefas    tarefas[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tarefas {
+  id            Int           @id @default(autoincrement())
+  texto         String
+  coluna        String        @default("afazer") @db.VarChar(10)
+  ordem         Int           @default(0)
+  projeto_id    Int
+  usuario_id    Int
+  criado_em     DateTime?     @default(now()) @db.Timestamp(6)
+  prioridade_id Int
+  iniciada_em   DateTime?     @db.Timestamp(6)
+  concluida_em  DateTime?     @db.Timestamp(6)
+  comentarios   comentarios[]
+  prioridades   prioridades   @relation(fields: [prioridade_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "tarefas_prioridades_fk")
+  projetos      projetos      @relation(fields: [projeto_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuario       usuario       @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model unidadesmedida {
+  id        Int        @id(map: "unudadesmedida_pk") @default(autoincrement())
+  sigla     String     @db.VarChar(3)
+  descricao String?    @db.VarChar(30)
+  produtos  produtos[]
+}
+
+model usuario {
+  id          Int           @id @default(autoincrement())
+  nome        String        @db.VarChar(100)
+  email       String        @unique @db.VarChar(150)
+  senha_hash  String        @db.VarChar(255)
+  criado_em   DateTime?     @default(now()) @db.Timestamp(6)
+  comentarios comentarios[]
+  projetos    projetos[]
+  tarefas     tarefas[]
+}
