@@ -1,4 +1,5 @@
 const pool = require("../database/db");
+const prisma = require("../database/prisma");
 
 const prioridadeModel = {
   // Listar tarefas ordenadas por prioridade
@@ -22,16 +23,21 @@ const prioridadeModel = {
 
     return result.rows;
   },
+  
   // Listar os níveis de prioridade
   async listarTodas() {
-    const result = await pool.query(`
-      SELECT id, descricao, cor
-      FROM prioridades
-      ORDER BY id
-    `);
-
-    return result.rows;
+    return prisma.prioridades.findMany({
+      select: {
+        id: true,
+        descricao: true,
+        cor: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
   },
+
 
   // Cadastrar prioridade
   async criar({ descricao, cor }) {
@@ -45,13 +51,13 @@ const prioridadeModel = {
     return result.rows[0];
   },
 
-    // Editar prioridade
+  // Editar prioridade
   async atualizar(id, { descricao, cor }) {
     const atual = await pool.query(
       `SELECT id, descricao, cor
        FROM prioridades
        WHERE id = $1`,
-      [id]
+      [id],
     );
 
     if (atual.rows.length === 0) {
@@ -65,11 +71,7 @@ const prioridadeModel = {
        SET descricao = $1, cor = $2
        WHERE id = $3
        RETURNING id, descricao, cor, ativo`,
-      [
-        descricao ?? prioridadeAtual.descricao,
-        cor ?? prioridadeAtual.cor,
-        id
-      ]
+      [descricao ?? prioridadeAtual.descricao, cor ?? prioridadeAtual.cor, id],
     );
 
     return result.rows[0];
@@ -78,10 +80,9 @@ const prioridadeModel = {
   // Excluir prioridade com segurança
   async excluir(id) {
     // Verifica se a prioridade existe
-    const atual = await pool.query(
-      `SELECT id FROM prioridades WHERE id = $1`,
-      [id]
-    );
+    const atual = await pool.query(`SELECT id FROM prioridades WHERE id = $1`, [
+      id,
+    ]);
 
     if (atual.rows.length === 0) {
       return null;
@@ -93,7 +94,7 @@ const prioridadeModel = {
        FROM tarefas
        WHERE prioridade_id = $1
        LIMIT 1`,
-      [id]
+      [id],
     );
 
     if (tarefas.rows.length > 0) {
@@ -104,7 +105,7 @@ const prioridadeModel = {
       `DELETE FROM prioridades
        WHERE id = $1
        RETURNING id, descricao, cor`,
-      [id]
+      [id],
     );
 
     return result.rows[0] || null;

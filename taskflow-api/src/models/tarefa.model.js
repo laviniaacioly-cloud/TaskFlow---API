@@ -1,10 +1,48 @@
 const pool = require("../database/db");
+const prisma = require("../database/prisma");
 
-module.exports = {
-  // Listar todas as tarefas
+const incluirNomes = {
+  prioridades: {
+    select: {
+      descricao: true,
+      cor: true,
+    },
+  },
+  projetos: {
+    select: {
+      nome: true,
+    },
+  },
+  usuario: {
+    select: {
+      nome: true,
+    },
+  },
+};
+
+function formatarTarefa(tarefa) {
+  const { prioridades, projetos, usuario, ...resto } = tarefa;
+
+  return {
+    ...resto,
+    prioridade: prioridades?.descricao,
+    cor: prioridades?.cor,
+    projeto: projetos?.nome,
+    usuario: usuario?.nome,
+  };
+}
+
+const tarefaModel = {
+  // Listar todas as tarefas usando Prisma
   listar: async () => {
-    const result = await pool.query("SELECT * FROM tarefas ORDER BY id");
-    return result.rows;
+    const result = await prisma.tarefas.findMany({
+      include: incluirNomes,
+      orderBy: {
+        id: "asc",
+      },
+    });
+
+    return result.map(formatarTarefa);
   },
 
   // Listar tarefas por coluna
@@ -70,8 +108,6 @@ module.exports = {
   },
 
   // Atualizar uma tarefa
-  
-  // Atualizar uma tarefa
   atualizar: async (id, dados) => {
     const {
       texto,
@@ -114,16 +150,16 @@ module.exports = {
       iniciadaEm = new Date();
     }
 
-// Registra a data ao concluir e limpa ao reabrir a tarefa
-let concluidaEm = atual.concluida_em;
+    // Registra a data ao concluir e limpa ao reabrir a tarefa
+    let concluidaEm = atual.concluida_em;
 
-if (coluna === "concluido") {
-  if (!concluidaEm) {
-    concluidaEm = new Date();
-  }
-} else if (coluna === "andamento" || coluna === "afazer") {
-  concluidaEm = null;
-}
+    if (coluna === "concluido") {
+      if (!concluidaEm) {
+        concluidaEm = new Date();
+      }
+    } else if (coluna === "andamento" || coluna === "afazer") {
+      concluidaEm = null;
+    }
 
     const result = await pool.query(
       `UPDATE tarefas
@@ -150,7 +186,6 @@ if (coluna === "concluido") {
 
     return result.rows[0] || null;
   },
-
 
   // Remover uma tarefa
   remover: async (id) => {
@@ -233,3 +268,5 @@ if (coluna === "concluido") {
     return `Você tem ${dados.total} tarefa(s): ${dados.concluido} concluída(s), ${dados.andamento} em andamento e ${dados.afazer} a fazer. A prioridade mais comum: ${prioridadeMaisComum}.`;
   },
 };
+
+module.exports = tarefaModel;
