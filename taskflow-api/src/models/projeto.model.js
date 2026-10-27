@@ -1,20 +1,24 @@
 const pool = require("../database/db");
+const prisma = require("../database/prisma");
 
 module.exports = {
-  // Listar todos os projetos
+  // Listar todos os projetos usando Prisma
   listarProjetos: async () => {
-    const result = await pool.query("SELECT * FROM projetos ORDER BY id");
-    return result.rows;
+    return await prisma.projetos.findMany({
+      orderBy: {
+        nome: "asc",
+      },
+    });
   },
 
-  // Buscar um projeto pelo ID
+  // Buscar um projeto pelo ID usando Prisma
   buscarProjeto: async (id) => {
-    const result = await pool.query("SELECT * FROM projetos WHERE id = $1", [
-      id,
-    ]);
-    return result.rows[0] || null;
-  },
+    const projeto = await prisma.projetos.findUnique({
+      where: { id },
+    });
 
+    return projeto || null;
+  },
   // Adicionar um projeto
 
   adicionarProjeto: async ({ nome, descricao, usuarioId }) => {

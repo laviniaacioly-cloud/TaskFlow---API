@@ -1,30 +1,34 @@
-
 const pool = require("../database/db");
+const prisma = require("../database/prisma");
 
 module.exports = {
-  // GET - Listar usuários
+  // GET - Listar usuários usando Prisma
   listarUsuarios: async () => {
-    const result = await pool.query(
-      "SELECT id, nome, email FROM usuario ORDER BY id"
-    );
-    return result.rows;
+    return await prisma.usuario.findMany({
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
+      orderBy: {
+        id: "asc",
+      },
+    });
   },
 
   // GET - Buscar por ID
   buscarUsuario: async (id) => {
-    const result = await pool.query(
-      "SELECT * FROM usuario WHERE id = $1",
-      [id]
-    );
+    const result = await pool.query("SELECT * FROM usuario WHERE id = $1", [
+      id,
+    ]);
     return result.rows[0] || null;
   },
 
   // Buscar por e-mail
   buscarPorEmail: async (email) => {
-    const result = await pool.query(
-      "SELECT * FROM usuario WHERE email = $1",
-      [email]
-    );
+    const result = await pool.query("SELECT * FROM usuario WHERE email = $1", [
+      email,
+    ]);
     return result.rows[0] || null;
   },
 
@@ -34,7 +38,7 @@ module.exports = {
       `INSERT INTO usuario (nome, email, senha_hash)
        VALUES ($1, $2, $3)
        RETURNING id, nome, email`,
-      [nome, email, senha_hash]
+      [nome, email, senha_hash],
     );
     return result.rows[0];
   },
@@ -43,7 +47,7 @@ module.exports = {
   atualizarUsuario: async (id, dados) => {
     const usuarioAtual = await pool.query(
       "SELECT * FROM usuario WHERE id = $1",
-      [id]
+      [id],
     );
 
     if (usuarioAtual.rows.length === 0) return null;
@@ -55,11 +59,7 @@ module.exports = {
        SET nome = $1, email = $2
        WHERE id = $3
        RETURNING id, nome, email`,
-      [
-        dados.nome ?? atual.nome,
-        dados.email ?? atual.email,
-        id
-      ]
+      [dados.nome ?? atual.nome, dados.email ?? atual.email, id],
     );
     return result.rows[0] || null;
   },
@@ -68,7 +68,7 @@ module.exports = {
   removerUsuario: async (id) => {
     const result = await pool.query(
       "DELETE FROM usuario WHERE id = $1 RETURNING id, nome, email",
-      [id]
+      [id],
     );
     return result.rows[0] || null;
   },

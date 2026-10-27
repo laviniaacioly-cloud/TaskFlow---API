@@ -2,35 +2,21 @@ const pool = require("../database/db");
 const prisma = require("../database/prisma");
 
 const incluirNomes = {
-  prioridades: {
-    select: {
-      descricao: true,
-      cor: true,
-    },
-  },
-  projetos: {
-    select: {
-      nome: true,
-    },
-  },
-  usuario: {
-    select: {
-      nome: true,
-    },
-  },
+  projetos: {select: { nome: true }},
+  usuarios: {select: { nome: true }},
+  prioridades: {select: { descricao: true, cor: true }},
 };
-
 function formatarTarefa(tarefa) {
-  const { prioridades, projetos, usuario, ...resto } = tarefa;
-
+  const { projetos, usuarios, prioridades, ...resto } = tarefa;
   return {
     ...resto,
-    prioridade: prioridades?.descricao,
-    cor: prioridades?.cor,
     projeto: projetos?.nome,
-    usuario: usuario?.nome,
+    usuario: usuarios?.nome,
+    //prioridade: prioridades?{descricao: prioridades.descricao, cor: prioridades.cor} : null 
+    prioridade: prioridades?.descricao,
+    prioridade_cor: prioridades?.cor
   };
-}
+};
 
 const tarefaModel = {
   // Listar todas as tarefas usando Prisma
@@ -65,13 +51,14 @@ const tarefaModel = {
     return result.rows;
   },
 
-  // Buscar uma tarefa pelo ID
+  // Buscar uma tarefa pelo ID usando Prisma
   buscar: async (id) => {
-    const result = await pool.query("SELECT * FROM tarefas WHERE id = $1", [
-      id,
-    ]);
+    const tarefa = await prisma.tarefas.findUnique({
+      where: { id },
+      include: incluirNomes,
+    });
 
-    return result.rows[0] || null;
+    return tarefa ? formatarTarefa(tarefa) : null;
   },
 
   // Adicionar uma tarefa
@@ -81,15 +68,18 @@ const tarefaModel = {
     prioridade,
     coluna,
     usuario_id,
-    usuarioId,
     projeto_id,
-    projetoId,
   }) => {
-    const prioridadesIds = {
-      baixa: 1,
-      media: 2,
-      alta: 3,
-    };
+    const tarefa =  await prisma.tarefas.create({
+     data: {
+      texto: texto,
+      prioridade_id: prioridade_id || 2,
+      coluna: coluna || 'afazer',
+      usuario_id: usuario_id,
+      projeto_id: projeto_id,
+      ordem: ordem || 0
+     }
+    })
 
     const prioridadeId = prioridade_id ?? prioridadesIds[prioridade || "media"];
 
