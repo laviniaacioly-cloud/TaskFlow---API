@@ -1,4 +1,3 @@
-const pool = require("../database/db");
 const prisma = require("../database/prisma");
 
 module.exports = {
@@ -14,58 +13,61 @@ module.exports = {
   // Buscar um projeto pelo ID usando Prisma
   buscarProjeto: async (id) => {
     const projeto = await prisma.projetos.findUnique({
-      where: { id },
+      where: { id: Number(id) },
     });
 
     return projeto || null;
   },
-  // Adicionar um projeto
 
+  // Adicionar um projeto usando Prisma
   adicionarProjeto: async ({ nome, descricao, usuarioId }) => {
-    const result = await pool.query(
-      `INSERT INTO projetos (nome, descricao, usuario_id)
-     VALUES ($1, $2, $3)
-     RETURNING *`,
-      [nome, descricao ?? "", usuarioId],
-    );
-
-    return result.rows[0];
+    return await prisma.projetos.create({
+      data: {
+        nome,
+        descricao: descricao ?? "",
+        usuario_id: Number(usuarioId),
+      },
+    });
   },
 
-  // Atualizar um projeto
-
+  // Atualizar um projeto usando Prisma
   atualizarProjeto: async (id, dados) => {
-    const projetoAtual = await pool.query(
-      "SELECT * FROM projetos WHERE id = $1",
-      [id],
-    );
+    const idNumerico = Number(id);
 
-    if (projetoAtual.rows.length === 0) return null;
+    const atual = await prisma.projetos.findUnique({
+      where: { id: idNumerico },
+    });
 
-    const atual = projetoAtual.rows[0];
+    if (!atual) {
+      return null;
+    }
 
-    const result = await pool.query(
-      `UPDATE projetos
-     SET nome = $1, descricao = $2, usuario_id = $3
-     WHERE id = $4
-     RETURNING *`,
-      [
-        dados.nome ?? atual.nome,
-        dados.descricao ?? atual.descricao,
-        dados.usuarioId ?? atual.usuario_id,
-        id,
-      ],
-    );
-
-    return result.rows[0] || null;
+    return await prisma.projetos.update({
+      where: { id: idNumerico },
+      data: {
+        nome: dados.nome ?? atual.nome,
+        descricao: dados.descricao ?? atual.descricao,
+        usuario_id: Number(
+          dados.usuario_id ?? dados.usuarioId ?? atual.usuario_id,
+        ),
+      },
+    });
   },
 
-  // Remover um projeto
+  // Remover um projeto usando Prisma
   removerProjetos: async (id) => {
-    const result = await pool.query(
-      "DELETE FROM projetos WHERE id = $1 RETURNING *",
-      [id],
-    );
-    return result.rows[0] || null;
+    try {
+      return await prisma.projetos.delete({
+        where: { id: Number(id) },
+      });
+    } catch (erro) {
+      // P2025 significa que o projeto não foi encontrado
+      if (erro.code === "P2025") {
+        return null;
+      }
+
+      // Outros erros serão tratados pelo middleware global
+      throw erro;
+    }
   },
 };

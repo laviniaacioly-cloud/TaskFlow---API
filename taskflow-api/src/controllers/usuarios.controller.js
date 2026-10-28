@@ -97,6 +97,7 @@ const usuariosController = {
     }
   },
 
+  
   // DELETE - REMOVER USUÁRIO
   async remover(req, res) {
     try {
@@ -111,7 +112,7 @@ const usuariosController = {
         });
       }
 
-      // Buscar tarefas associadas ao usuário
+      // Verificar se existem tarefas associadas
       const tarefas = await tarefaModel.listar();
 
       const tarefasDoUsuario = tarefas.filter(
@@ -119,20 +120,31 @@ const usuariosController = {
       );
 
       if (tarefasDoUsuario.length > 0) {
-        return res.status(400).json({
-          erro: "Usuário possui tarefas. Remova as tarefas antes.",
+        return res.status(409).json({
+          erro: "Não é possível excluir o usuário: existem registros vinculados.",
         });
       }
 
+      // O model também verifica projetos e comentários associados
       const removido = await usuarioModel.removerUsuario(id);
 
-      res.json({
+      return res.json({
         mensagem: "Usuário removido com sucesso!",
         usuario: removido,
       });
     } catch (erro) {
       console.error("Erro ao remover usuário:", erro);
-      res.status(500).json({ erro: "Erro ao remover usuário" });
+
+      // Preservar o status e a mensagem dos erros conhecidos
+      if (erro.status) {
+        return res.status(erro.status).json({
+          erro: erro.message,
+        });
+      }
+
+      return res.status(500).json({
+        erro: "Erro ao remover usuário",
+      });
     }
   },
 };

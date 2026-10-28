@@ -1,8 +1,8 @@
-const pool = require("../database/db");
 const prisma = require("../database/prisma");
+const criarErro = require("../../utils/criarErro");
 
 module.exports = {
-  // GET - Listar usuários usando Prisma
+  // GET - Listar usuários
   listarUsuarios: async () => {
     return await prisma.usuario.findMany({
       select: {
@@ -16,60 +16,111 @@ module.exports = {
     });
   },
 
-  // GET - Buscar por ID
+  // GET - Buscar usuário por ID
   buscarUsuario: async (id) => {
-    const result = await pool.query("SELECT * FROM usuario WHERE id = $1", [
-      id,
-    ]);
-    return result.rows[0] || null;
+    return await prisma.usuario.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
+    });
   },
 
   // Buscar por e-mail
+  // A senha é necessária internamente para validar o login.
   buscarPorEmail: async (email) => {
-    const result = await pool.query("SELECT * FROM usuario WHERE email = $1", [
-      email,
-    ]);
-    return result.rows[0] || null;
+    return await prisma.usuario.findUnique({
+      where: { email },
+    });
   },
 
   // POST - Adicionar usuário
   adicionarUsuario: async ({ nome, email, senha_hash }) => {
-    const result = await pool.query(
-      `INSERT INTO usuario (nome, email, senha_hash)
-       VALUES ($1, $2, $3)
-       RETURNING id, nome, email`,
-      [nome, email, senha_hash],
-    );
-    return result.rows[0];
+    return await prisma.usuario.create({
+      data: {
+        nome,
+        email,
+        senha_hash,
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
+    });
   },
 
   // PUT - Atualizar usuário
   atualizarUsuario: async (id, dados) => {
-    const usuarioAtual = await pool.query(
-      "SELECT * FROM usuario WHERE id = $1",
-      [id],
-    );
+    const idNumerico = Number(id);
 
-    if (usuarioAtual.rows.length === 0) return null;
+    const atual = await prisma.usuario.findUnique({
+      where: { id: idNumerico },
+    });
 
-    const atual = usuarioAtual.rows[0];
+    if (!atual) {
+      return null;
+    }
 
-    const result = await pool.query(
-      `UPDATE usuario
-       SET nome = $1, email = $2
-       WHERE id = $3
-       RETURNING id, nome, email`,
-      [dados.nome ?? atual.nome, dados.email ?? atual.email, id],
-    );
-    return result.rows[0] || null;
+    return await prisma.usuario.update({
+      where: { id: idNumerico },
+      data: {
+        nome: dados.nome ?? atual.nome,
+        email: dados.email ?? atual.email,
+      },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
+    });
   },
 
   // DELETE - Remover usuário
   removerUsuario: async (id) => {
-    const result = await pool.query(
-      "DELETE FROM usuario WHERE id = $1 RETURNING id, nome, email",
-      [id],
-    );
-    return result.rows[0] || null;
+    const idNumerico = Number(id);
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: idNumerico },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        _count: {
+          select: {
+            tarefas: true,
+            projetos: true,
+            comentarios: true,
+          },
+        },
+      },
+    });
+
+    if (!usuario) {
+      return null;
+    }
+
+    const possuiVinculos =
+      usuario._count.tarefas > 0 ||
+      usuario._count.projetos > 0 ||
+      usuario._count.comentarios > 0;
+
+    if (possuiVinculos) {
+      throw criarErro(
+        409,
+        "Não é possível excluir o usuário: existem registros vinculados.",
+      );
+    }
+
+    return await prisma.usuario.delete({
+      where: { id: idNumerico },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+      },
+    });
   },
 };

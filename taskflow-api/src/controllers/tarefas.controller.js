@@ -203,8 +203,9 @@ const tarefasController = {
 
       await tarefaModel.remover(id);
 
-      // Sucesso: excluída sem corpo na resposta
-      res.status(204).end();
+      res.status(200).json({
+        mensagem: "Tarefa excluída com sucesso",
+      });
     } catch (erro) {
       throw erro;
     }

@@ -132,7 +132,7 @@ const projetosController = {
       );
 
       if (tarefasDoProjeto.length > 0) {
-        return res.status(400).json({
+        return res.status(409).json({
           erro: "Projeto possui tarefas associadas.",
         });
       }
