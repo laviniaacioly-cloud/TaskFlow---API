@@ -14,6 +14,11 @@ const projetosRoutes = require("./src/routes/projetos.routes");
 const authRoutes = require("./src/routes/auth.routes");
 const prioridadesRoutes = require("./src/routes/prioridades.routes");
 
+//REQUIRE DO SWAGGER
+const swaggerUi = require('swagger-ui-express');
+const openapi = require('./src/docs/openapi');
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
+
 // IMPORTAR MIDDLEWARE DE AUTENTICAÇÃO
 const autenticar = require("./src/middlewares/autenticar");
 
