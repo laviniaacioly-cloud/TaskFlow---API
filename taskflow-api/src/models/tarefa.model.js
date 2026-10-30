@@ -37,7 +37,6 @@ const tarefaModel = {
     return result.map(formatarTarefa);
   },
 
-
   // Listar tarefas por coluna usando Prisma
   listarPorColuna: async (coluna) => {
     const result = await prisma.tarefas.findMany({
@@ -49,8 +48,6 @@ const tarefaModel = {
     return result.map(formatarTarefa);
   },
 
-
-
   // Listar tarefas por usuário usando Prisma
   listarPorUsuario: async (usuarioId) => {
     const result = await prisma.tarefas.findMany({
@@ -61,7 +58,6 @@ const tarefaModel = {
 
     return result.map(formatarTarefa);
   },
-
 
   // Buscar uma tarefa pelo ID usando Prisma
   buscar: async (id) => {
@@ -95,11 +91,21 @@ const tarefaModel = {
     const usuarioIdFinal = Number(usuario_id ?? usuarioId);
     const projetoIdFinal = Number(projeto_id ?? projetoId);
 
+    // Definir as datas conforme a coluna inicial
+    const agora = new Date();
+
+    const iniciadaEm =
+      coluna === "andamento" || coluna === "concluido" ? agora : null;
+
+    const concluidaEm = coluna === "concluido" ? agora : null;
+
     const tarefa = await prisma.tarefas.create({
       data: {
         texto,
         coluna: coluna || "afazer",
         ordem: Number(ordem ?? 0),
+        iniciada_em: iniciadaEm,
+        concluida_em: concluidaEm,
         prioridades: {
           connect: { id: Number(prioridadeId) },
         },
@@ -198,7 +204,7 @@ const tarefaModel = {
       });
 
       return formatarTarefa(tarefa);
-    } catch (erro) { 
+    } catch (erro) {
       // P2025 significa que a tarefa não foi encontrada
       if (erro.code === "P2025") {
         return null;

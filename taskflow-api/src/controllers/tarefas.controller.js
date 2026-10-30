@@ -4,14 +4,18 @@ const criarErro = require("../../utils/criarErro");
 
 const tarefasController = {
   // GET - LISTAR TAREFAS
-
   async listar(req, res) {
     try {
-      const { coluna } = req.query;
+      const { coluna, usuarioId } = req.query;
 
       let resultado;
 
-      if (coluna) {
+      if (usuarioId && coluna) {
+        const tarefasUsuario = await tarefaModel.listarPorUsuario(usuarioId);
+        resultado = tarefasUsuario.filter((tarefa) => tarefa.coluna === coluna);
+      } else if (usuarioId) {
+        resultado = await tarefaModel.listarPorUsuario(usuarioId);
+      } else if (coluna) {
         resultado = await tarefaModel.listarPorColuna(coluna);
       } else {
         resultado = await tarefaModel.listar();
@@ -80,17 +84,9 @@ const tarefasController = {
   // POST - CRIAR TAREFA
   async criar(req, res) {
     try {
-      const {
-        texto,
-        prioridade_id,
-        prioridade,
-        coluna,
-        projeto_id,
-        projetoId,
-      } = req.body;
+      const { texto, prioridade_id, prioridade, coluna, projeto_id } = req.body;
 
       const usuarioId = req.usuario.id;
-      const projetoIdFinal = projeto_id ?? projetoId;
 
       if (!texto) {
         return res.status(400).json({
@@ -98,7 +94,7 @@ const tarefasController = {
         });
       }
 
-      if (projetoIdFinal == null) {
+      if (projeto_id == null) {
         return res.status(400).json({
           erro: "O projeto é obrigatório",
         });
@@ -128,7 +124,7 @@ const tarefasController = {
         prioridade,
         coluna,
         usuarioId,
-        projetoId: projetoIdFinal,
+        projetoId: projeto_id,
       });
 
       res.status(201).json(novaTarefa);
@@ -137,7 +133,6 @@ const tarefasController = {
     }
   },
 
- 
   // PUT - EDITAR TAREFA
   async atualizar(req, res) {
     try {
@@ -175,10 +170,7 @@ const tarefasController = {
       delete dadosAtualizacao.concluidaEm;
       delete dadosAtualizacao.concluida_em;
 
-      const atualizada = await tarefaModel.atualizar(
-        id,
-        dadosAtualizacao,
-      );
+      const atualizada = await tarefaModel.atualizar(id, dadosAtualizacao);
 
       if (!atualizada) {
         throw criarErro(404, "Tarefa não encontrada");
@@ -189,7 +181,6 @@ const tarefasController = {
       throw erro;
     }
   },
-
 
   // DELETE - DELETAR TAREFA
   async remover(req, res) {

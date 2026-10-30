@@ -2,25 +2,42 @@ const paths = {
   "/tarefas": {
     get: {
       tags: ["Tarefas"],
-      summary: "Lista todas as tarefas",
+      summary: "Listar tarefas",
+      description: "Lista tarefas, permitindo filtrar por usuário e/ou coluna.",
       parameters: [
         {
-          name: "usuarioId",
           in: "query",
+          name: "usuarioId",
           required: false,
-          schema: { type: "integer" },
-          description: "Filtra tarefas pelos usuários",
+          schema: {
+            type: "integer",
+          },
+          description: "Filtra tarefas pelo ID do usuário",
+        },
+        {
+          in: "query",
+          name: "coluna",
+          required: false,
+          schema: {
+            type: "string",
+            enum: ["afazer", "andamento", "concluido"],
+          },
+          description: "Filtra tarefas pela coluna do Kanban",
         },
       ],
       responses: {
         200: {
           description: "Lista de tarefas",
-        },
-        400: {
-          description: "Parâmetros inválidos",
-        },
-        401: {
-          description: "Token não informado ou inválido",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/Tarefa",
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -43,6 +60,7 @@ const paths = {
       },
     },
   },
+
   "/tarefas/{id}": {
     get: {
       tags: ["Tarefas"],
@@ -61,6 +79,7 @@ const paths = {
         404: { description: "Tarefa não encontrada" },
       },
     },
+
     put: {
       tags: ["Tarefas"],
       summary: "Atualiza uma tarefa",
@@ -86,6 +105,7 @@ const paths = {
         404: { description: "Tarefa não encontrada" },
       },
     },
+
     delete: {
       tags: ["Tarefas"],
       summary: "Remove uma tarefa",
@@ -103,12 +123,22 @@ const paths = {
         404: { description: "Tarefa não encontrada" },
       },
     },
-    "/tarefas/estatisticas": {
-      get: {
-        tags: ["Estatísticas"],
-        summary: "Consulta estatísticas das tarefas",
-        responses: {
-          200: { description: "Estatísticas retornadas" },
+  },
+
+  "/tarefas/estatisticas": {
+    get: {
+      tags: ["Estatísticas"],
+      summary: "Consulta estatísticas das tarefas",
+      responses: {
+        200: {
+          description: "Estatísticas das tarefas",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/EstatisticasTarefas",
+              },
+            },
+          },
         },
       },
     },
@@ -118,7 +148,16 @@ const paths = {
         tags: ["Estatísticas"],
         summary: "Consulta o resumo das tarefas",
         responses: {
-          200: { description: "Resumo retornado" },
+          200: {
+            description: "Resumo textual das tarefas",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ResumoTarefas",
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -141,20 +180,123 @@ const schemas = {
         type: "string",
         enum: ["afazer", "andamento", "concluido"],
       },
+      ordem: {
+        type: "integer",
+        example: 0,
+      },
+      projeto_id: {
+        type: "integer",
+        example: 1,
+      },
+      usuario_id: {
+        type: "integer",
+        example: 2,
+      },
+      prioridade_id: {
+        type: "integer",
+        example: 2,
+      },
+      criado_em: {
+        type: "string",
+        format: "date-time",
+        example: "2026-10-06T10:55:05.620Z",
+      },
       iniciada_em: {
         type: "string",
         format: "date-time",
         nullable: true,
       },
+      concluida_em: {
+        type: "string",
+        format: "date-time",
+        nullable: true,
+      },
+      projeto: {
+        type: "string",
+        example: "Projeto TaskFlow",
+      },
+      usuario: {
+        type: "string",
+        example: "Lavinia",
+      },
+      prioridade: {
+        type: "string",
+        example: "media",
+      },
+      prioridade_cor: {
+        type: "string",
+        example: "#F5A623",
+      },
     },
   },
+
+  EstatisticasTarefas: {
+    type: "object",
+    properties: {
+      total: {
+        type: "integer",
+        example: 10,
+      },
+      porColuna: {
+        type: "object",
+        properties: {
+          afazer: { type: "integer", example: 3 },
+          andamento: { type: "integer", example: 4 },
+          concluido: { type: "integer", example: 3 },
+        },
+      },
+      porPrioridade: {
+        type: "object",
+        properties: {
+          alta: { type: "integer", example: 2 },
+          media: { type: "integer", example: 5 },
+          baixa: { type: "integer", example: 3 },
+        },
+      },
+      "Mais Tarefas": {
+        type: "array",
+        description:
+          "Lista de colunas e suas quantidades de tarefas, em ordem decrescente.",
+        items: {
+          type: "array",
+          minItems: 2,
+          maxItems: 2,
+          items: {
+            oneOf: [{ type: "string" }, { type: "integer" }],
+          },
+        },
+      },
+      rankingUsuarios: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            usuarioId: { type: "integer", example: 2 },
+            nome: { type: "string", example: "Lavinia" },
+            totalTarefas: { type: "integer", example: 5 },
+          },
+        },
+      },
+    },
+  },
+
+  ResumoTarefas: {
+    type: "string",
+    example:
+      "Você tem 10 tarefa(s): 3 concluída(s), 4 em andamento e 3 a fazer. A prioridade mais comum: media.",
+  },
+
   TarefaEntrada: {
     type: "object",
-    required: ["texto"],
+    required: ["texto", "projeto_id"],
     properties: {
       texto: {
         type: "string",
         example: "Revisar layout",
+      },
+      prioridade_id: {
+        type: "integer",
+        example: 2,
       },
       prioridade: {
         type: "string",
@@ -166,9 +308,9 @@ const schemas = {
         enum: ["afazer", "andamento", "concluido"],
         example: "afazer",
       },
-      usuarioId: {
-        type: "number",
-        example: 2,
+      projeto_id: {
+        type: "integer",
+        example: 1,
       },
     },
   },

@@ -26,6 +26,7 @@ const schemas = {
       enum: ["afazer", "andamento", "concluido"],
     },
     usuarioId: { obrigatorio: false, tipo: "number" },
+    projeto_id: { obrigatorio: true, tipo: "number" },
   },
 
   usuario: {
