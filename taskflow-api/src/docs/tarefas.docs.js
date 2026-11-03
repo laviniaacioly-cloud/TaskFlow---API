@@ -142,19 +142,19 @@ const paths = {
         },
       },
     },
+  },
 
-    "/tarefas/estatisticas/resumo": {
-      get: {
-        tags: ["Estatísticas"],
-        summary: "Consulta o resumo das tarefas",
-        responses: {
-          200: {
-            description: "Resumo textual das tarefas",
-            content: {
-              "application/json": {
-                schema: {
-                  $ref: "#/components/schemas/ResumoTarefas",
-                },
+  "/tarefas/estatisticas/resumo": {
+    get: {
+      tags: ["Estatísticas"],
+      summary: "Consulta o resumo das tarefas",
+      responses: {
+        200: {
+          description: "Resumo textual das tarefas",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/ResumoTarefas",
               },
             },
           },

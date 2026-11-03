@@ -14,10 +14,23 @@ const projetosRoutes = require("./src/routes/projetos.routes");
 const authRoutes = require("./src/routes/auth.routes");
 const prioridadesRoutes = require("./src/routes/prioridades.routes");
 
-//REQUIRE DO SWAGGER
-const swaggerUi = require('swagger-ui-express');
-const openapi = require('./src/docs/openapi');
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(openapi));
+// REQUIRE DO SWAGGER
+const swaggerUi = require("swagger-ui-express");
+const openapi = require("./src/docs/openapi");
+
+const SWAGGER_CDN = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14";
+
+app.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(openapi, {
+    customCssUrl: `${SWAGGER_CDN}/swagger-ui.css`,
+    customJs: [
+      `${SWAGGER_CDN}/swagger-ui-bundle.js`,
+      `${SWAGGER_CDN}/swagger-ui-standalone-preset.js`,
+    ],
+  }),
+);
 
 // IMPORTAR MIDDLEWARE DE AUTENTICAÇÃO
 const autenticar = require("./src/middlewares/autenticar");
@@ -76,7 +89,7 @@ app.use("/projetos", autenticar, projetosRoutes);
 
 app.use("/prioridades", prioridadesRoutes);
 
-app.use ((req, res) => {
+app.use((req, res) => {
   const rota = `${req.method} ${req.url}`;
   throw criarErro(404, `Rota ${rota} não encontrada`);
 });
