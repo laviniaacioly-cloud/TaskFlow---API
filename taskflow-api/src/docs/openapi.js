@@ -12,9 +12,14 @@ module.exports = {
     version: "1.0.0",
     description: "API do Taskflow - SENAI CTGAS-ER",
   },
-  servers: [{ url: "http://localhost:3000", description: "Local" }],
-
-  security: [{ bearerAuth: [] }],
+  servers: [
+  {
+    url: process.env.VERCEL
+      ? "https://task-flow-api-six.vercel.app"
+      : "http://localhost:3000",
+    description: process.env.VERCEL ? "Produção" : "Local",
+  },
+],
 
   paths: { 
     ...tarefas.paths,
