@@ -1,5 +1,7 @@
 const prisma = require("../database/prisma");
 
+const formatarTarefa = require('../../utils/formatarTarefa');
+
 const incluirNomes = {
   projetos: {
     select: { nome: true },
@@ -11,18 +13,6 @@ const incluirNomes = {
     select: { descricao: true, cor: true },
   },
 };
-
-function formatarTarefa(tarefa) {
-  const { projetos, usuario, prioridades, ...resto } = tarefa;
-
-  return {
-    ...resto,
-    projeto: projetos?.nome,
-    usuario: usuario?.nome,
-    prioridade: prioridades?.descricao,
-    prioridade_cor: prioridades?.cor,
-  };
-}
 
 const tarefaModel = {
   // Listar todas as tarefas usando Prisma

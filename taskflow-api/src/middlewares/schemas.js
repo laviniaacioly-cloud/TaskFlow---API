@@ -1,3 +1,4 @@
+
 const schemas = {
   id: {
     id: {
@@ -13,20 +14,46 @@ const schemas = {
     },
   },
 
+  // POST - CRIAR TAREFA
   tarefa: {
     texto: { obrigatorio: true, tipo: "string" },
     prioridade: {
       obrigatorio: false,
       tipo: "string",
-      enum: ["alta", "media", "baixa"],
+    },
+    prioridade_id: {
+      obrigatorio: true,
+      tipo: "number",
     },
     coluna: {
-      obrigatorio: false,
+      obrigatorio: true,
       tipo: "string",
       enum: ["afazer", "andamento", "concluido"],
     },
-    usuarioId: { obrigatorio: false, tipo: "number" },
+    usuario_id: { obrigatorio: true, tipo: "number" },
     projeto_id: { obrigatorio: true, tipo: "number" },
+  },
+
+  // PUT - ATUALIZAR TAREFA
+  tarefaAtualizacao: {
+    texto: { obrigatorio: false, tipo: "string" },
+    prioridade: {
+      obrigatorio: false,
+      tipo: "string",
+    },
+    prioridade_id: {
+      obrigatorio: true,
+      tipo: "number",
+    },
+    coluna: {
+      obrigatorio: true,
+      tipo: "string",
+      enum: ["afazer", "andamento", "concluido"],
+    },
+
+    usuario_id: { obrigatorio: false, tipo: "number" },
+    projeto_id: { obrigatorio: false, tipo: "number" },
+    ordem: { obrigatorio: false, tipo: "number" },
   },
 
   usuario: {
@@ -46,4 +73,5 @@ const schemas = {
     maxLength: 200,
   },
 };
+
 module.exports = schemas;

@@ -101,15 +101,6 @@ const tarefasController = {
       }
 
       if (
-        prioridade !== undefined &&
-        !["alta", "media", "baixa"].includes(prioridade)
-      ) {
-        return res.status(400).json({
-          erro: "Prioridade inválida. Use: alta, media ou baixa",
-        });
-      }
-
-      if (
         coluna !== undefined &&
         !["afazer", "andamento", "concluido"].includes(coluna)
       ) {
@@ -144,16 +135,6 @@ const tarefasController = {
       }
 
       const { prioridade, coluna } = req.body;
-
-      // Validar prioridade
-      if (
-        prioridade !== undefined &&
-        !["alta", "media", "baixa"].includes(prioridade)
-      ) {
-        return res.status(400).json({
-          erro: "Prioridade inválida. Use: alta, media ou baixa",
-        });
-      }
 
       // Validar coluna
       if (

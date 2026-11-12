@@ -17,16 +17,6 @@ function validar(schema, origem) {
 
       if (ausente) continue;
 
-      // if (!ausente && regras.tipo && typeof valor !== regras.tipo) {
-      //   erros.push(`O campo '${campo}' deve ser do tipo ${regras.tipo}`);
-      // }
-
-      // if (!ausente && regras.enum && !regras.enum.includes(valor)) {
-      //   erros.push(
-      //     `O campo '${campo}' deve ser um de: ${regras.enum.join(", ")}`,
-      //   );
-      // }
-
       if (regras.enum && !regras.enum.includes(valor)) {
         erros.push(
           `O campo '${campo}' deve ser um de: ${regras.enum.join(", ")}`,

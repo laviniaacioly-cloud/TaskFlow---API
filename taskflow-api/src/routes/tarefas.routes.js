@@ -29,12 +29,14 @@ router.post(
 );
 
 // EDITAR TAREFAS - PUT
+
 router.put(
   "/:id",
   idValido,
-  validar(schemas.tarefa),
+  validar(schemas.tarefaAtualizacao),
   tarefasController.atualizar
 );
+
 // DELETAR TAREFAS - DELETE
 router.delete("/:id", idValido, tarefasController.remover);
 
